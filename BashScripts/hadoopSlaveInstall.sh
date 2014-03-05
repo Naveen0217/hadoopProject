@@ -4,9 +4,9 @@
 # Author:    Michael Kepple
 # Date:      5 Mar 2014
 #
-scp newo:/etc/hosts /etc/hosts
-scp newo:/home/hadoop/.ssh/authorized_keys /home/hadoop/.ssh/authorized_keys
-scp newo:/home/hadoop/.bash_profile /home/hadoop/.bash_profile
+scp aho:/home/hadoop/.ssh/authorized_keys /home/hadoop/.ssh/authorized_keys
+scp aho:/etc/hosts /etc/hosts
+scp aho:/home/hadoop/.bash_profile /home/hadoop/.bash_profile
 yum install wget
 wget . http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
 rpm -ivh rpmforge-release-0.5.3-1.el6.rf.x86_64.rpm
