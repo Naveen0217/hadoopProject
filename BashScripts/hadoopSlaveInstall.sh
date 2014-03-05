@@ -21,7 +21,7 @@ yum remove hadoop-hdfs-secondarynamenode
 yum remove hadoop-yarn-proxyserver
 yum remove hadoop-hdfs-namenode
 rm -rf /etc/hadoop/conf
-scp -r newo:/etc/hadoop/conf /etc/hadoop/conf
+scp -r aho:/etc/hadoop/conf /etc/hadoop/conf
 mkdir -p /home/hdfs/dfs/data
 chown -R hdfs /home/hdfs
 mkdir -p /home/hdfs/yarn
