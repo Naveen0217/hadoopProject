@@ -1,9 +1,10 @@
 #!/bin/bash
 #
 # Hadoop Cluster start-up and admin operations
-# Author:    Michael Kepple
-# Called by: ~/.bash_profile
-# Date:      29 Feb 2014
+# Author:      Michael Kepple
+# Called by:   ~/.bash_profile
+# Date:        29 Feb 2014
+# Note:        Requires SSHPass (yum install sshpass).
 #
 source ~/.bashrc
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-i386
@@ -38,7 +39,20 @@ node_delete()
     done
 }
 
-while getopts "h:d:z:x:" opt; do
+# Should be run as root/sudo'd
+admin_sync()
+{
+    for node in ${NODES[@]}
+    do
+        sshpass -p $1 scp /etc/hosts $node:/etc/hosts
+        sshpass -p $1 scp /home/hadoop/.ssh/authorized_keys $node:/home/hadoop/.ssh/authorized_keys
+	sshpass -p $1 scp /home/hadoop/.bash_profile $node:/home/hadoop/.bash_profile
+	sshpass -p $1 scp /home/hadoop/.bashrc $node:/home/hadoop/.bashrc
+	sshpass -p $1 scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
+    done
+}
+
+while getopts "h:d:z:x:s:" opt; do
     case $opt in
         x) node_delete $OPTARG
 	   ;;
@@ -49,6 +63,9 @@ while getopts "h:d:z:x:" opt; do
            ;;
         z) echo "Zookeeper -> "
 	   #node_sync $ZOOKEEPER_VERSION
+	   ;;
+        s) admin_sync $OPTARG
+	   ;;
     esac
 done
 
