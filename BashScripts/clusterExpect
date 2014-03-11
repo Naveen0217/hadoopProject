@@ -1,0 +1,29 @@
+#!/usr/bin/env expect
+#
+# Hadoop cluster passphrase initialization script
+# Author:        Michael Kepple
+# Date:          10 Mar 2014
+# Note:          Expect is damn particular about squiggly bracket placement, be
+#                warned if modifying this script.
+#
+set currentNode [lindex $argv 0];
+set passPhrase [lindex $argv 1];
+
+spawn ssh hadoop\@$currentNode
+set timeout 2
+
+expect {
+# If you don't actually finish the login, the passphrase never gets stored with
+# remote SSH-Agent
+  /home/hadoop/.ssh/id_rsa: {
+    exp_send "$passPhrase\n"
+    exp_continue
+  }
+  "$ " {
+    send_user "$currentNode SSH PassPhrase successful.\n"
+  }
+  timeout {
+    exit
+  }
+}
+exit
