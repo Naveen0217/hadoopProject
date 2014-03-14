@@ -26,5 +26,8 @@ mkdir -p /home/hdfs/dfs/data
 chown -R hdfs /home/hdfs
 mkdir -p /home/hdfs/yarn
 chown -R yarn /home/hdfs/yarn
+yum install rsync
+yum install dmidecode
+yum install hdparm
 service hadoop-hdfs-datanode start
 service hadoop-yarn-nodemanager start

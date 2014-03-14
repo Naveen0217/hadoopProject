@@ -6,28 +6,32 @@
 # Date:        29 Feb 2014
 # Note:        Needs updating.
 #
-source ~/.bashrc
-export JAVA_HOME=/usr/java/jdk1.7.0_51
-export HADOOP_INSTALL=/home/hadoop/hadoop-1.2.1
-export PATH=$PATH:$HADOOP_INSTALL/bin:$JAVA_HOME/bin
-HADOOP_VERSION="hadoop-1.2.1"
-HBASE_VERSION="hbase-0.94.8"
-ZOOKEEPER_VERSION="zookeeper-3.4.5"
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
+SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 NODES=('aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anon');
+LOW_END=('aho' 'rhino');
+MID_END=('tito' 'maino' 'drapo' 'hippo' 'kepo');
+HIGH_END=('newo' 'appo' 'mino');
 sshAgentInfo=$HOME/.ssh/agentInfo
 
-node_sync()
+# Ex: ./clusterAdmin.sh -h NODES:BASIC
+#     ./clusterAdmin.sh -h CLASS_ACER:BASIC
+conf_sync()
 {
-    CLASS_NAME="${2}[@]"
+    input=(${1//:/ })
+    nodeClass=${input[0]}
+    confClass=${input[1]}
+    confDir=$SCRIPT_CONF_DIR$confClass/
+    CLASS_NAME="${nodeClass}[@]"
     CLASS_ARRAY=( "${!CLASS_NAME}" );
     for node in ${CLASS_ARRAY[@]}
     do
         if [ "$node" = "$HOSTNAME" ]; then
             continue
         fi
-        rsync -avz $HOME/$2/$1/conf $node:~/$1
+	echo $node
+        rsync -avz $confDir $node:/etc/hadoop/conf
     done
 }
 
@@ -55,7 +59,8 @@ admin_sync()
 	sshpass -p $1 ssh $node -t chown hadoop /home/hadoop/.ssh/authorized_keys
 	sshpass -p $1 scp /home/hadoop/.bash_profile $node:/home/hadoop/.bash_profile
 	sshpass -p $1 scp /home/hadoop/.bashrc $node:/home/hadoop/.bashrc
-	sshpass -p $1 scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
+	#sshpass -p $1 scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
+        sshpass -p $1 ssh $node -t "chown hadoop:hadoop /etc/hadoop/conf/*"
     done
 }
 
@@ -72,7 +77,7 @@ while getopts "h:d:z:x:s:i:" opt; do
     case $opt in
         x) node_delete $OPTARG
 	   ;;
-        h) node_sync $HADOOP_VERSION $OPTARG
+        h) conf_sync $OPTARG
            ;;
         d) echo "Hbase -> " ${ACER_CLASS[*]}
 	   #node_sync $HBASE_VERSION
