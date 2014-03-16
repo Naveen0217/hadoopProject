@@ -35,17 +35,14 @@ conf_sync()
     done
 }
 
-node_delete()
+# ./clusterAdmin.sh -e "hostname; ls"
+execute_nodes()
 {
     for node in ${NODES[@]}
     do
-        ssh $node "rm -rf $1"
+        # force pseudo-tty allocation (allows for sudo, etc).
+        ssh $node -t $OPTARG
     done
-}
-
-confDiff()
-{
-    echo "I'm a stub."
 }
 
 # Should be run as root/sudo'd
@@ -71,23 +68,29 @@ init_passphrases()
     do
         /usr/bin/expect -f ./clusterExpect $node $1
     done
-}	
+}
 
-while getopts "h:d:z:x:s:i:" opt; do
+# Argument is root pw on nodes, run as root
+reboot()
+{
+    for node in ${NODES[@]}
+    do
+        sshpass -p $1 ssh $node -t "service hadoop-yarn-nodemanager restart"
+	sshpass -p $1 ssh $node -t "service hadoop-hdfs-datanode restart"
+    done
+}
+
+while getopts "h:s:i:e:r:" opt; do
     case $opt in
-        x) node_delete $OPTARG
+	e) execute_nodes $OPTARG
 	   ;;
         h) conf_sync $OPTARG
            ;;
-        d) echo "Hbase -> " ${ACER_CLASS[*]}
-	   #node_sync $HBASE_VERSION
-           ;;
-        z) echo "Zookeeper -> "
-	   #node_sync $ZOOKEEPER_VERSION
-	   ;;
         i) init_passphrases $OPTARG
            ;;
         s) admin_sync $OPTARG
+	   ;;
+	r) reboot $OPTARG
 	   ;;
     esac
 done

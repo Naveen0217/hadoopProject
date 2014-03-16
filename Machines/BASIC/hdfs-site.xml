@@ -10,6 +10,10 @@
      <value>/home/hdfs</value>
   </property>
   <property>
+     <name>dfs.datanode.data.dir</name>
+     <value>/home/hdfs/dfs/data,/tmp/hdfs/dfs/data</value>
+  </property>
+  <property>
     <name>dfs.webhdfs.enabled</name>
     <value>true</value>
   </property>

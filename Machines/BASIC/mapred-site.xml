@@ -22,4 +22,12 @@
     <name>mapreduce.framework.name</name>
     <value>yarn</value>
   </property>
+  <property>
+    <name>mapred.task.timeout</name>
+    <value>1800000</value>
+  </property>
+  <property>
+    <name>mapreduce.map.output.compress</name>
+    <value>true</value>
+  </property>
 </configuration>
