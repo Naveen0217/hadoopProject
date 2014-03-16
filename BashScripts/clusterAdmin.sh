@@ -8,10 +8,12 @@
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 NODES=('aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
-CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anon');
+CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
 LOW_END=('aho' 'rhino');
 MID_END=('tito' 'maino' 'drapo' 'hippo' 'kepo');
-HIGH_END=('newo' 'appo' 'mino');
+MINO=('mino');
+APPO=('appo');
+NEWO=('newo');
 sshAgentInfo=$HOME/.ssh/agentInfo
 
 # Run to incorporate new Datanode/Nodemanager slaves into cluster
@@ -71,6 +73,17 @@ conf_sync()
     done
 }
 
+# Ex: ./clusterAdmin.sh -a
+conf_sync_all()
+{
+    conf_sync CLASS_ACER:CLASS_ACER
+    conf_sync LOW_END:LOW_END
+    conf_sync MID_END:MID_END
+    conf_sync MINO:MINO
+    conf_sync APPO:APPO
+    conf_sync NEWO:NEWO
+} 
+
 # ./clusterAdmin.sh -e "hostname; ls"
 execute_nodes()
 {
@@ -85,6 +98,7 @@ execute_nodes()
 # Note: master node must have installed sshpass
 admin_sync()
 {
+    stty -echo
     read -p "Password: " passw; echo
     stty echo
     for node in ${NODES[@]}
@@ -109,15 +123,17 @@ init_passphrases()
     done
 }
 
-# ./clusterAdmin.sh -r
+# sudo ./clusterAdmin.sh -r
+# NOTE: must be run as su/sudo
 reboot()
 {
+    stty -echo
     read -p "Password: " passw; echo
     stty echo
     for node in ${NODES[@]}
     do
-        sshpass -p $1 ssh $node -t "service hadoop-yarn-nodemanager restart"
-	sshpass -p $1 ssh $node -t "service hadoop-hdfs-datanode restart"
+        sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager restart"
+	sshpass -p $passw ssh $node -t "service hadoop-hdfs-datanode restart"
     done
 }
 
@@ -130,7 +146,7 @@ gateway_forward()
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 }
 
-while getopts "h:si:e:rn:" opt; do
+while getopts "h:si:e:rn:a" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -144,6 +160,8 @@ while getopts "h:si:e:rn:" opt; do
 	   ;;
 	n) install_node $OPTARG
 	   ;;
+        a) conf_sync_all
+           ;;
     esac
 done
 
