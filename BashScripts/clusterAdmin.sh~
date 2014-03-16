@@ -96,7 +96,6 @@ admin_sync()
 	sshpass -p $passw scp /home/hadoop/.bashrc $node:/home/hadoop/.bashrc
 	sshpass -p $passw scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
         sshpass -p $passw ssh $node -t "chown hadoop:hadoop /etc/hadoop/conf/*"
-	#sshpass -p $passw scp /etc/sysctl.conf $node:/etc/sysctl.conf
     done
 }
 
@@ -119,15 +118,6 @@ reboot()
         sshpass -p $1 ssh $node -t "service hadoop-yarn-nodemanager restart"
 	sshpass -p $1 ssh $node -t "service hadoop-hdfs-datanode restart"
     done
-}
-
-# ./clusterAdmin.sh -f
-# NOTE: should be run on gateway node as su/sudo
-gateway_forward()
-{
-    iptables -A FORWARD -i eth1 -j ACCEPT
-    iptables -A FORWARD -o eth0 -j ACCEPT
-    iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 }
 
 while getopts "h:si:e:rn:" opt; do
