@@ -1,1 +1,0 @@
-SELECT SUM(ROUND((LENGTH(sentence) - LENGTH(REPLACE(sentence, " game,", "")) ) / LENGTH(" game,"))) + SUM(ROUND((LENGTH(sentence) - LENGTH(REPLACE(sentence, " game.", "")) ) / LENGTH(" game."))) + SUM(ROUND((LENGTH(sentence) - LENGTH(REPLACE(sentence, " game ", "")) ) / LENGTH(" game "))) from sentences;
