@@ -7,3 +7,12 @@ Average IO rate mb/sec: 182.622802734375
  IO rate std deviation: 104.73343119053035
     Test exec time sec: 128.45
 
+----- TestDFSIO ----- : read
+           Date & time: Tue Mar 18 12:48:23 EDT 2014
+       Number of files: 10
+Total MBytes processed: 10000.0
+     Throughput mb/sec: 19.17582312220752
+Average IO rate mb/sec: 22.59026527404785
+ IO rate std deviation: 9.84624759012083
+    Test exec time sec: 97.996
+
