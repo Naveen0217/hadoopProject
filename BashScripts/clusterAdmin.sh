@@ -7,6 +7,7 @@
 #
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
+DFS_DIRS=('/home/hdfs/' '/tmp/hdfs');
 NODES=('aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
 LOW_END=('aho' 'rhino');
@@ -51,6 +52,22 @@ install_node()
     yum install hdparm
     service hadoop-hdfs-datanode start
     service hadoop-yarn-nodemanager start
+}
+
+# Ex: sudo ./clusterAdmin.sh -d
+# NOTE: Must be run as su/sudo
+reformat_datanodes()
+{
+    stty -echo
+    read -p "Password: " passw; echo
+    stty echo
+    for node in ${NODES[@]}
+    do
+    	for dir in ${DFS_DIRS[@]}
+    	do
+		sshpass -p $passw ssh $node -t "rm -f $dir/dfs/data/current/VERSION"
+	done
+    done
 }
 
 # Ex: ./clusterAdmin.sh -h NODES:BASIC
@@ -111,6 +128,7 @@ admin_sync()
 	sshpass -p $passw scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
         sshpass -p $passw ssh $node -t "chown hadoop:hadoop /etc/hadoop/conf/*"
 	#sshpass -p $passw scp /etc/sysctl.conf $node:/etc/sysctl.conf
+	#sshpass -p $passw scp /etc/security/limits.conf $node:/etc/security/limits.conf
     done
 }
 
@@ -146,7 +164,7 @@ gateway_forward()
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 }
 
-while getopts "h:si:e:rn:a" opt; do
+while getopts "h:si:e:rn:ad" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -162,6 +180,8 @@ while getopts "h:si:e:rn:a" opt; do
 	   ;;
         a) conf_sync_all
            ;;
+	d) reformat_datanodes
+	   ;;
     esac
 done
 

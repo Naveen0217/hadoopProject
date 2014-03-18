@@ -72,4 +72,12 @@
     <name>yarn.nodemanager.vmem-pmem-ratio</name>
     <value>4.1</value>
   </property>
+  <property>
+    <name>yarn.scheduler.minimum-allocation-mb</name>
+    <value>512</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-mb</name>
+    <value>14336</value>
+  </property>
 </configuration>

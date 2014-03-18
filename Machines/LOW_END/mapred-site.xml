@@ -31,11 +31,11 @@
     <value>-Xmx800M</value>
   </property>
   <property>
-    <name>mapreduce.app.mapreduce.am.resource.mb</name>
+    <name>yarn.app.mapreduce.am.resource.mb</name>
     <value>1024</value>
   </property>
   <property>
-    <name>mapreduce.app.mapreduce.am.command-opts</name>
+    <name>yarn.app.mapreduce.am.command-opts</name>
     <value>-Xmx800M</value>
   </property>
 </configuration>
