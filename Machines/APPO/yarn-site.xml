@@ -63,18 +63,13 @@
         $HADOOP_YARN_HOME/*,$HADOOP_YARN_HOME/lib/*
      </value>
   </property>
-  <!-- Custom class -->
   <property>
     <name>yarn.nodemanager.resource.memory-mb</name>
-    <value>7168</value>
-  </property>
-  <property>
-    <name>yarn.nodemanager.vmem-pmem-ratio</name>
-    <value>2.1</value>
+    <value>6144</value>
   </property>
   <property>
     <name>yarn.scheduler.minimum-allocation-mb</name>
-    <value>512</value>
+    <value>1024</value>
   </property>
   <property>
     <name>yarn.scheduler.maximum-allocation-mb</name>
