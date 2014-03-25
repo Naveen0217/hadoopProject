@@ -9,6 +9,7 @@ HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 DFS_DIRS=('/home/hdfs/' '/tmp/hdfs');
 NODES=('aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
+SLAVES=('tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
 LOW_END=('aho' 'rhino');
 MID_END=('tito' 'maino' 'drapo' 'hippo' 'kepo');
@@ -104,7 +105,7 @@ conf_sync_all()
 # ./clusterAdmin.sh -e "hostname; ls"
 execute_nodes()
 {
-    for node in ${NODES[@]}
+    for node in ${SLAVES[@]}
     do
         # force pseudo-tty allocation (allows for sudo, etc).
         ssh $node -t $OPTARG
