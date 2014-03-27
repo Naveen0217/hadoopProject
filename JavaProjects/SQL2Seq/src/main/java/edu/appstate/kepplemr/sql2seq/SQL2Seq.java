@@ -9,9 +9,11 @@ import java.util.Scanner;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
+
 import com.mysql.jdbc.Statement;
 
 public class SQL2Seq 
@@ -21,7 +23,8 @@ public class SQL2Seq
 	private final String password;
 	private final String fields;
 	private final String table;
-	//private int numProcessed;
+	private final boolean intKey;
+	private int numProcessed;
 	
 	public static void main(String[] args)
 	{
@@ -37,6 +40,7 @@ public class SQL2Seq
 		this.password = new String(pw);
 		this.table = console.readLine("Table to import from: ");
 		this.fields = console.readLine("Field(s) to import: ");
+		this.intKey = (console.readLine("IntWritable key? (Text default) [y/n]: ").toCharArray()[0] == 'y' ? true : false);
 		this.hdfsOutdir = console.readLine("HDFS Output directory: ");
 		if (!authenticateMysqlUser())
 			System.exit(-1);
@@ -83,31 +87,32 @@ public class SQL2Seq
 		File currDir = new File(workingDir);
 	    for (final File fileEntry : currDir.listFiles()) 
 	    {
-	    	if (fileEntry.isDirectory())
+	    	try 
 	    	{
-	    		File frm = new File(fileEntry.getPath() + "/" + table + ".frm");
-	    		File myd = new File(fileEntry.getPath() + "/" + table + ".MYD");
-	    		File myi = new File(fileEntry.getPath() + "/" + table + ".MYI");
-	    		if (frm.exists() && !frm.isDirectory() && myd.exists() && 
-	    			!myd.isDirectory() && myi.exists() && !myi.isDirectory() &&
-	    			fileEntry.getName().contains("_200"))
-	    		{
-	    			System.out.println("Found matching database: " + fileEntry.getName());
-	    			try
-	    			{
-	    				String dbName = fileEntry.getName();
-	    				if (dbName.contains("-mysql"))
-	    					dbName = renameDatabase(fileEntry);
-	    				// sanitizeDb()?
-	    				dumpFieldsToFile(dbName);
-	    				createSeqFiles(dbName);
-	    			}
-	    			catch (Exception ex)
-	    			{
-	    				ex.printStackTrace();
-	    			}
-	    		}
-	    	}
+				if (fileEntry.getCanonicalFile().isDirectory())
+				{
+					File frm = new File(fileEntry.getPath() + "/" + table + ".frm");
+					File myd = new File(fileEntry.getPath() + "/" + table + ".MYD");
+					File myi = new File(fileEntry.getPath() + "/" + table + ".MYI");
+					if (frm.exists() && !frm.isDirectory() && myd.exists() && 
+						!myd.isDirectory() && myi.exists() && !myi.isDirectory() &&
+						fileEntry.getName().contains("_20"))
+					{
+						System.out.println("Found matching database: " + fileEntry.getName());
+						String dbName = fileEntry.getName();
+						if (dbName.contains("-mysql"))
+							dbName = renameDatabase(fileEntry);
+						// sanitizeDb()?
+						dumpFieldsToFile(dbName);
+						createSeqFiles(dbName);
+					}
+				}
+			} 
+	    	catch (IOException e) 
+	    	{
+	    		System.err.println("I/O Error on file/dir: " + fileEntry.toString());
+				e.printStackTrace();
+			}
 	    }
 	}
 	
@@ -124,21 +129,43 @@ public class SQL2Seq
 		// When packaging with maven-assembly, included JARs can overwrite the proper conf settings; reset them. 
 		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 	    conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName() );
-		Path path = new Path(hdfsOutdir);
-		Text key = new Text(database);
-		Text value = new Text();
-		String sep = System.getProperty("file.separator");
-		String dumpFile = System.getProperty("user.dir") + sep + database + sep + "dump.txt";
-		File file = new File(dumpFile);
+		Path path = new Path(hdfsOutdir + numProcessed);
+		IntWritable iKey = null;
+		Text tKey = null;
 		try 
 		{
+			if (intKey)
+			{
+				System.out.println("Creating <IntWritable, Text> Sequencefiles...");
+				writer = SequenceFile.createWriter(conf, Writer.file(path), Writer.keyClass(IntWritable.class), Writer.valueClass(Text.class));
+				iKey = new IntWritable();
+			}
+			else
+			{
+				System.out.println("Creating <Text, Text> Sequencefiles...");
+				writer = SequenceFile.createWriter(conf, Writer.file(path), Writer.keyClass(Text.class), Writer.valueClass(Text.class));
+				tKey = new Text();
+			}
+			Text value = new Text();
+			String sep = System.getProperty("file.separator");
+			String dumpFile = System.getProperty("user.dir") + sep + database + sep + "dump.txt";
+			File file = new File(dumpFile);
 			Scanner scan = new Scanner(file);
-			writer = SequenceFile.createWriter(conf, Writer.file(path), Writer.keyClass(Text.class), Writer.valueClass(Text.class));
-			key.set(database);
 			while (scan.hasNextLine())
 			{
-				value.set(scan.nextLine());
-				writer.append(key, value);
+				if (intKey)
+				{
+					iKey.set(numProcessed);
+					value.set(scan.nextLine());
+					writer.append(iKey, value);
+				}
+				else
+				{
+					tKey.set(database + numProcessed);
+					value.set(scan.nextLine());
+					writer.append(tKey, value);
+				}
+				numProcessed++;
 			}
 			scan.close();
 		} 
