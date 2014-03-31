@@ -50,4 +50,33 @@
     <final>true</final>
   </property>
    <!-- End of user privilege settings -->
+  <property>
+    <name>ipc.server.listen.queue.size</name>
+    <value>1024</value>
+  </property>
+  <property>
+    <name>io.file.buffer.size</name>
+    <value>65536</value>
+    <final>true</final>
+  </property>
+  <property>
+    <name>file.bytes-per-checksum</name>
+    <value>4096</value>
+    <final>true</final>
+  </property>
+  <property>
+    <name>io.bytes.per.checksum</name>
+    <value>4096</value>
+    <final>true</final>
+  </property>
+  <property>
+    <name>dfs.bytes-per-checksum</name>
+    <value>4096</value>
+    <final>true</final>
+  </property>
+  <property>
+    <name>dfs.client.read.shortcircuit</name>
+    <value>true</value>
+    <final>true</final>
+  </property>
 </configuration>

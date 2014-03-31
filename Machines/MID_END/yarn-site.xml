@@ -86,11 +86,11 @@
   </property>
   <property>
     <name>yarn.app.mapreduce.am.resouce.mb</name>
-    <value>3072</value>
+    <value>2048</value>
   </property>
   <property>
     <name>yarn.app.mapreduce.am.command-opts</name>
-    <value>-Xmx1536</value>
+    <value>-Xmx1536m</value>
   </property>
   <property>
     <name>yarn.app.mapreduce.am.resource.cpu-vcores</name>

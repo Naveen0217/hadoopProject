@@ -8,12 +8,12 @@
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 DFS_DIRS=('/home/hdfs/' '/tmp/hdfs');
-NODES=('aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
-SLAVES=('tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
+NODES=('tonto' 'aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
+SLAVES=('tonto' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
 LOW_END=('aho' 'rhino');
 MID_END=('tito' 'maino' 'drapo' 'hippo' 'kepo');
-MINO=('mino');
+MID_HIGH=('mino' 'tonto');
 APPO=('appo');
 NEWO=('newo');
 sshAgentInfo=$HOME/.ssh/agentInfo
@@ -97,7 +97,7 @@ conf_sync_all()
     conf_sync CLASS_ACER:CLASS_ACER
     conf_sync LOW_END:LOW_END
     conf_sync MID_END:MID_END
-    conf_sync MINO:MINO
+    conf_sync MID_HIGH:MID_HIGH
     conf_sync APPO:APPO
     conf_sync NEWO:NEWO
 } 
