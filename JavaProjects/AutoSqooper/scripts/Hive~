@@ -1,0 +1,38 @@
+DROP TABLE corpora;
+CREATE EXTERNAL TABLE corpora 
+(
+  s_id INT,
+  sentence STRING
+)
+row format delimited fields terminated by ','
+location '/user/root/hive/eng_news_2005_10K';
+SELECT * from corpora;
+
+###################################
+
+LOAD DATA INPATH "/user/root/hive/eng_news_2006_10K" INTO TABLE corpora;
+
+###################################
+
+select * from corpora
+sort by s_id;
+
+###################################
+
+drop table if exists word_count;
+
+create external table if not exists word_count(word string, count int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+lines terminated by '\n' STORED AS TEXTFILE LOCATION '/user/hive/output/';
+
+from (
+        from corpora
+        map corpora.sentence
+        using 'word_count_mapper.py'
+        as word, count
+        cluster by word) map_output
+insert overwrite table word_count
+reduce map_output.word, map_output.count
+using 'word_count_reducer.py'
+as word,count;
