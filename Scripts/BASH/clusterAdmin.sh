@@ -192,9 +192,9 @@ solo_mode()
     do
         sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager stop"
     done
-    conf_sync NEWO:NEWO_SOLO
+    sudo -u hadoop conf_sync NEWO:NEWO_SOLO
     service hadoop-yarn-nodemanager restart
-    ssh aho -t "service hadoop-yarn-resourcemanager restart"
+    sshpass -p $passw ssh aho -t "service hadoop-yarn-resourcemanager restart"
 }
 
 # sudo ./clusterAdmin.sh -u
@@ -205,7 +205,7 @@ undo_solo()
     reboot
 }
 
-while getopts "h:si:e:rn:adic" opt; do
+while getopts "h:si:e:rn:adicou" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -225,7 +225,7 @@ while getopts "h:si:e:rn:adic" opt; do
 	   ;;
         c) clear_logs
            ;;
-	s) solo_mode
+	o) solo_mode
            ;;
         u) undo_solo
            ;;
