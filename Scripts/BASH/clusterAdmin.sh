@@ -169,6 +169,7 @@ reboot()
         sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager restart"
 	sshpass -p $passw ssh $node -t "service hadoop-hdfs-datanode restart"
     done
+    sshpass -p $passw ssh aho -t "service hadoop-yarn-resourcemanager restart"
 }
 
 # ./clusterAdmin.sh -f
@@ -178,6 +179,30 @@ gateway_forward()
     iptables -A FORWARD -i eth1 -j ACCEPT
     iptables -A FORWARD -o eth0 -j ACCEPT
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+}
+
+# sudo ./clusterAdmin.sh -s
+# NOTE: must be run as root
+solo_mode()
+{
+    stty -echo
+    read -p "Password: " passw; echo
+    stty echo
+    for node in ${NODES[@]}
+    do
+        sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager stop"
+    done
+    conf_sync NEWO:NEWO_SOLO
+    service hadoop-yarn-nodemanager restart
+    ssh aho -t "service hadoop-yarn-resourcemanager restart"
+}
+
+# sudo ./clusterAdmin.sh -u
+# NOTE: must be run as root
+undo_solo()
+{
+    conf_sync NEWO:NEWO
+    reboot
 }
 
 while getopts "h:si:e:rn:adic" opt; do
@@ -199,6 +224,10 @@ while getopts "h:si:e:rn:adic" opt; do
 	d) reformat_datanodes
 	   ;;
         c) clear_logs
+           ;;
+	s) solo_mode
+           ;;
+        u) undo_solo
            ;;
     esac
 done
