@@ -100,7 +100,22 @@ conf_sync_all()
     conf_sync MID_HIGH:MID_HIGH
     conf_sync APPO:APPO
     conf_sync NEWO:NEWO
-} 
+}
+
+# sudo ./clusterAdmin.sh -c
+clear_logs()
+{
+    stty -echo
+    read -p "Password: " passw; echo
+    stty echo
+    for node in ${NODES[@]}
+    do
+        sshpass -p $passw ssh $node -t "rm -rf /var/log/hadoop-hdfs/*"
+        sshpass -p $passw ssh $node -t "rm -rf /var/log/hadoop-mapreduce/*"
+        sshpass -p $passw ssh $node -t "rm -rf /var/log/hadoop-yarn/*"
+        sshpass -p $passw ssh $node -t "rm -rf /var/log/hadoop-httpfs/*"
+    done
+}
 
 # ./clusterAdmin.sh -e "hostname; ls"
 execute_nodes()
@@ -165,7 +180,7 @@ gateway_forward()
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 }
 
-while getopts "h:si:e:rn:ad" opt; do
+while getopts "h:si:e:rn:adic" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -183,6 +198,8 @@ while getopts "h:si:e:rn:ad" opt; do
            ;;
 	d) reformat_datanodes
 	   ;;
+        c) clear_logs
+           ;;
     esac
 done
 

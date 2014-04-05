@@ -82,7 +82,7 @@
   </property>
   <property>
     <name>yarn.nodemanager.vmem-pmem-ratio</name>
-    <value>2.1</value>
+    <value>2.5</value>
   </property>
   <property>
     <name>yarn.app.mapreduce.am.resouce.mb</name>
