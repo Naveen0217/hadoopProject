@@ -1,0 +1,20 @@
+// AutoSqoop - no dump files, sudo not needed
+java -jar TextProject-0.0.1-jar-with-dependencies.jar autosqoop -n root -t sentences -k s_id -i /var/lib/mysql -o output/
+java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhost:8020/user/hadoop/seqs/0
+
+// Counts
+java -jar TextProject-0.0.1-jar-with-dependencies.jar counts -w Appalachian -i hdfs://localhost:8020/user/michael/sqoopOut/eng_wikipedia_2010_1M/part-r-00000.seq -o outputs -l -r -c -u
+
+// HadoopConfig
+java -jar TextProject-0.0.1-jar-with-dependencies.jar config | grep nodemanager
+
+// SeqDump
+java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhost:8020/user/hadoop/seqs/0
+
+// SQL2Seq
+sudo java -jar TextProject-0.0.1-jar-with-dependencies.jar sql2seq -n root -t sentences -i /var/lib/mysql -o hdfs://localhost:8020/user/michael/sql2seqOut/ -c sentence
+java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhost:8020/user/michael/sql2seqOut/0
+
+// VecDump
+
+
