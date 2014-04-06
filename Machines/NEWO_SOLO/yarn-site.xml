@@ -66,7 +66,7 @@
   <!-- Benchmark configs -->
   <property>
     <name>yarn.scheduler.minimum-allocation-mb</name>
-    <value>1024</value>
+    <value>6144</value>
   </property>
   <property>
     <name>yarn.scheduler.maximum-allocation-mb</name>
