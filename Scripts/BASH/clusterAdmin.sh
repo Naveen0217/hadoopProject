@@ -16,6 +16,7 @@ MID_END=('tito' 'maino' 'drapo' 'hippo' 'kepo');
 MID_HIGH=('mino' 'tonto');
 APPO=('appo');
 NEWO=('newo');
+LARGE_HEAP=('newo' 'appo' 'tonto' 'mino');
 sshAgentInfo=$HOME/.ssh/agentInfo
 
 # Run to incorporate new Datanode/Nodemanager slaves into cluster
@@ -89,6 +90,24 @@ conf_sync()
 	echo $node
         rsync -avz $confDir $node:/etc/hadoop/conf
     done
+}
+
+# Update conf files for LARGE_HEAP cluster nodes
+# Ex: sudo ./clusterAdmin.sh -l
+large_heap_sync()
+{
+    conf_sync NEWO:LARGE_HEAP_MACHINES/NEWO
+    conf_sync APPO:LARGE_HEAP_MACHINES/APPO
+    conf_sync MID_HIGH:LARGE_HEAP_MACHINES/MID_HIGH
+    stty -echo
+    read -p "Password: " passw; echo
+    stty echo
+    for node in ${LARGE_HEAP[@]}
+    do
+        sshpass -p $passw ssh root@$node -t "service hadoop-yarn-nodemanager restart"
+        sshpass -p $passw ssh root@$node -t "service hadoop-hdfs-datanode restart"
+    done
+    sshpass -p $passw ssh root@aho -t "service hadoop-yarn-resourcemanager restart"
 }
 
 # Ex: ./clusterAdmin.sh -a
@@ -205,7 +224,7 @@ undo_solo()
     reboot
 }
 
-while getopts "h:si:e:rn:adicou" opt; do
+while getopts "h:si:e:rn:adicoul" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -228,6 +247,8 @@ while getopts "h:si:e:rn:adicou" opt; do
 	o) solo_mode
            ;;
         u) undo_solo
+           ;;
+        l) large_heap_sync
            ;;
     esac
 done
