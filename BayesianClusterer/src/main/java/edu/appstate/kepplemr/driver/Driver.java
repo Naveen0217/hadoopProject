@@ -7,9 +7,12 @@ import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.commandline.Parser;
+import org.apache.mahout.text.SequenceFilesFromDirectory;
+import org.apache.mahout.utils.vectors.RowIdJob;
+import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
+//import org.apache.mahout.clustering.lda.cvb.CVB0Driver;
 
 public class Driver 
 {
@@ -60,7 +63,6 @@ public class Driver
 	    	minFreq = 5;
 	    
 	    String[] arguments = new String[4];
-	    /*
 	    arguments[0]= "-i";
 	    arguments[1] = inputDir;
 	    arguments[2] = "-o";
@@ -68,18 +70,16 @@ public class Driver
 	    try
 	    {
 	    	// Use my modified seqdirectory class with conf bug fixed.
-	    	org.apache.mahout.fixes.SequenceFilesFromDirectory.main(arguments);
+	    	//org.apache.mahout.fixes.SequenceFilesFromDirectory.main(arguments);
+	    	SequenceFilesFromDirectory.main(arguments);
 	    }
 	    catch (Exception ex)
 	    {
 	    	System.err.println("Exception -> " + ex.toString());
 	    }
-	    */
-	    arguments = new String[10];
+	    arguments = new String[14];
 	    arguments[0] = "-i";
-	    arguments[1] = "hdfs://mothership:8020/user/hadoop/text1000seqs/";
-	    //arguments[1] = outputDir + "sequenceFiles/";
-	    //arguments[1] = "file:///home/michael/seqOut1000/";
+	    arguments[1] = outputDir + "sequenceFiles/";
 	    arguments[2] = "-o";
 	    arguments[3] = outputDir + "sparseVectors/";
 	    arguments[4] = "-x";
@@ -88,16 +88,38 @@ public class Driver
 	    arguments[7] = minFreq.toString();
 	    arguments[8] = "-seq";
 	    arguments[9] = "--namedVector";
-	    //arguments[10] = "-a";
-	    //arguments[11] = "edu.appstate.kepplemr.customanalyzer.GutenbergAnalyzer";
+	    arguments[10] = "-wt";
+	    arguments[11] = "tf";
+	    arguments[12] = "-a";
+	    arguments[13] = "edu.appstate.kepplemr.customanalyzer.GutenbergAnalyzer";
 	    try
 	    {
-	    	org.apache.mahout.fixes.SparseVectorsFromSequenceFiles.main(arguments);
+	    	//org.apache.mahout.fixes.SparseVectorsFromSequenceFiles.main(arguments);
+	    	SparseVectorsFromSequenceFiles.main(arguments);
 	    }
 	    catch (Exception ex)
 	    {
 	    	System.err.println("Exception -> " + ex.toString());
 	    	ex.printStackTrace();
 	    }
+	    arguments = new String[4];
+	    arguments[0] = "-i";
+	    arguments[1] = outputDir + "sparseVectors/tf-vectors/";
+	    arguments[2] = "-o";
+	    arguments[3] = outputDir + "sparseMatrix/";
+	    try
+	    {
+	    	RowIdJob.main(arguments);
+	    }
+	    catch (Exception ex)
+	    {
+	    	System.err.println("Exception -> " + ex.toString());
+	    	ex.printStackTrace();
+	    }
+	    arguments = new String[20];
+	    arguments[0] = "-i";
+	    arguments[1] = outputDir + "sparseMatrix/";
+	    // TBC
+	    
 	}
 }

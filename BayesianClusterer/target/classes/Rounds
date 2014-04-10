@@ -1,0 +1,50 @@
+Round #1:
+nohup time mahout cvb -i hdfs://mothership:8020/user/hadoop/output8/sparseMatrix/ -o hdfs://mothership:8020/user/hadoop/output8/cvbOut/ -x 20 -k 20 -nt 245092 -dict hdfs://mothership:8020/user/hadoop/output8/sparseVectors/dictionary.file-* -a 20
+# Failed with Text/VectorWritable cast.
+
+Round #2:
+1) Removed _SUCCESS file
+2) changed permissions on 'output' dir to 777
+3) deleted 'temp' directory under /user/michael
+# Failed with Text/VectorWritable cast.
+
+Round #3:
+1) Removed '/''s from end of dirs
+2) Lowered k-value
+# Is old cvb incompatible with new matrix output?
+
+Round #4:
+1) Added '/matrix'
+# Works now.
+
+
+CUDA (lots of crap/pre-filter):
+# a c t g -> DNA nucleotides
+# Dictionary base dir sufficient?
+Dictionary 1: 2047462
+Dictionary 2: 880128
+Dictionary 3: 1051256
+Dictionary 4: 1141596
+Dictionary 5: 907907
+Dictionary 6: 1574990
+Dictionary 7: 908314
+Dictionary 8: 922324
+Dictionary 9: 3168331
+Dictionary 10: 910759
+Dictionary 11: 957774
+Dictionary 12: 1427498
+Total: 15,898,339
+
+nohup time mahout cvb -i hdfs://localhost:8020/user/hadop/gutSparseMatrix/matrix \
+-o hdfs://localhost:8020/user/hadop/cvbOut \
+-x 20 \
+-k 20 \
+-a 20 \
+-nt 15898339 \
+-dict hdfs://localhost:8020/user/hadop/gutSparse4/dictionary.file-*
+
+
+
+
+ -o hdfs://mothership:8020/user/hadoop/output8/cvbOut/ -x 20 -k 20 -nt 245092 -dict hdfs://mothership:8020/user/hadoop/output8/sparseVectors/dictionary.file-* -a 20
+

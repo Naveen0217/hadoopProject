@@ -2,12 +2,12 @@ package edu.appstate.kepplemr.customanalyzer;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.analysis.util.FilteringTokenFilter;
 import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.StopFilter;
@@ -68,13 +68,13 @@ public class GutenbergAnalyzer extends StopwordAnalyzerBase
 	@Override
 	protected TokenStreamComponents createComponents(String arg0, Reader reader) 
 	{
-		TokenStream result = new StandardTokenizer(Version.LUCENE_46, reader);
-		result = new StandardFilter(Version.LUCENE_46, result);
+		Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_46,reader);
+		TokenStream result = new StandardFilter(Version.LUCENE_46, tokenizer);
         result = new ToughFilter(Version.LUCENE_46, result);
         result = new LowerCaseFilter(Version.LUCENE_46, result);
         result = new LengthFilter(Version.LUCENE_46, result, 3, 20);
         result = new StopFilter(Version.LUCENE_46, result, StandardAnalyzer.STOP_WORDS_SET);
         result = new PorterStemFilter(result);
-		return null;
+		return new TokenStreamComponents(tokenizer, result);
 	}
 }

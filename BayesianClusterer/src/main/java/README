@@ -1,8 +1,13 @@
 # Author: Michael Kepple
 # Date: 10 Apr 2014
-
-Note: Mahout 1.0-SNAPSHOT is required for this code to run and it is incompatible 
-with any prior versions or non-Hadoop2 clusters.
+# Ex: hadoop jar BayesianClusterer-0.0.1-jar-with-dependencies.jar \ 
+#        -i hdfs://mothership:8020/user/hadoop/text1000seqs/ \
+#        -o hdfs://mothership:8020/user/hadoop/output7/ \
+#        -maxDf 50 \
+#        -minDf 5
+# Note: Mahout 1.0-SNAPSHOT is required for this code to run and it is incompatible 
+#   with any prior versions or non-Hadoop2 clusters.
+# Note: Application of GutenbergAnalyzer reduced tf-vector size from 151.1MB -> 25.7MB
 
 git clone https://github.com/mahout.git
 mvn clean package -Dhadoop2.version=2.0.6-alpha
