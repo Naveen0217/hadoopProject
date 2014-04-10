@@ -9,6 +9,7 @@ import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.commandline.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.mahout.vectorizer.SparseVectorsFromSequenceFiles;
 
 public class Driver 
 {
@@ -25,7 +26,14 @@ public class Driver
 	    Option output = obuilder.withLongName("output").withRequired(true).withArgument(abuilder.withName("<outputDir>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("output directory for the various stages")
 	    	.withShortName("o").create();
-	    Group group = gbuilder.withName("Options").withOption(input).withOption(output).create();
+	    Option maxDFpercent = obuilder.withLongName("maxDFpercent").withRequired(false)
+	    	.withArgument(abuilder.withName("<maxPercent>").withMinimum(1).withMaximum(1).create())
+	    	.withDescription("maximum document frequency allowed for terms").withShortName("maxDf").create();
+	    Option minDFpercent = obuilder.withLongName("minDFpercent").withRequired(false)
+		    .withArgument(abuilder.withName("<minPercent>").withMinimum(1).withMaximum(1).create())
+		    .withDescription("minimum document frequency allowed for terms").withShortName("minDf").create();
+	    Group group = gbuilder.withName("Options").withOption(input).withOption(output).withOption(maxDFpercent)
+	    	.withOption(minDFpercent).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
 	    CommandLine cmdLine = null;
@@ -41,22 +49,55 @@ public class Driver
 		}
 	    String inputDir = cmdLine.getValue(input).toString();
 	    String outputDir = cmdLine.getValue(output).toString();
-	    String[] test = { "-i", inputDir, "-o", outputDir };
-	    //this.username = cmdLine.getValue(mysqlName).toString();
-	    //this.table = cmdLine.getValue(table).toString();
-	    //this.key = cmdLine.getValue(tableKey).toString();
-	    //this.columns = cmdLine.getValue(columns).toString();
+		Integer maxFreq, minFreq;
+	    if (cmdLine.hasOption(maxDFpercent))
+	    	maxFreq = Integer.parseInt(cmdLine.getValue(maxDFpercent).toString());
+	    else
+	    	maxFreq = 50;
+	    if (cmdLine.hasOption(minDFpercent))
+	    	minFreq = Integer.parseInt(cmdLine.getValue(minDFpercent).toString());
+	    else
+	    	minFreq = 5;
 	    
-	    
+	    String[] arguments = new String[4];
+	    /*
+	    arguments[0]= "-i";
+	    arguments[1] = inputDir;
+	    arguments[2] = "-o";
+	    arguments[3] = outputDir + "sequenceFiles/";
 	    try
 	    {
 	    	// Use my modified seqdirectory class with conf bug fixed.
-	    	edu.appstate.kepplemr.seqdirectory.SequenceFilesFromDirectory.main(test);
+	    	org.apache.mahout.fixes.SequenceFilesFromDirectory.main(arguments);
 	    }
 	    catch (Exception ex)
 	    {
 	    	System.err.println("Exception -> " + ex.toString());
 	    }
-		
+	    */
+	    arguments = new String[10];
+	    arguments[0] = "-i";
+	    arguments[1] = "hdfs://mothership:8020/user/hadoop/text1000seqs/";
+	    //arguments[1] = outputDir + "sequenceFiles/";
+	    //arguments[1] = "file:///home/michael/seqOut1000/";
+	    arguments[2] = "-o";
+	    arguments[3] = outputDir + "sparseVectors/";
+	    arguments[4] = "-x";
+	    arguments[5] = maxFreq.toString();
+	    arguments[6] = "-md";
+	    arguments[7] = minFreq.toString();
+	    arguments[8] = "-seq";
+	    arguments[9] = "--namedVector";
+	    //arguments[10] = "-a";
+	    //arguments[11] = "edu.appstate.kepplemr.customanalyzer.GutenbergAnalyzer";
+	    try
+	    {
+	    	org.apache.mahout.fixes.SparseVectorsFromSequenceFiles.main(arguments);
+	    }
+	    catch (Exception ex)
+	    {
+	    	System.err.println("Exception -> " + ex.toString());
+	    	ex.printStackTrace();
+	    }
 	}
 }
