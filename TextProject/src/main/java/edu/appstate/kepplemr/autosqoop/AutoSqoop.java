@@ -51,6 +51,7 @@ public class AutoSqoop
 	private final String input;
 	private final String output;
 	private final String columns;
+	private final String format;
 
 	public static void main(String[] args) 
 	{
@@ -83,8 +84,10 @@ public class AutoSqoop
 	    Option output = obuilder.withLongName("output").withRequired(false).withArgument(abuilder.withName("output")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Output directory (defaults to /user/$USERNAME/sqoopOut/)")
 	    	.withShortName("o").create();
+	    Option seqFile = obuilder.withLongName("seqFileFormat").withRequired(false)
+				.withDescription("Store on HDFS in SequenceFile format").withShortName("s").create();
 	    Group group = gbuilder.withName("Options").withOption(mysqlName).withOption(table).withOption(tableKey)
-	    	.withOption(input).withOption(output).withOption(columns).create();
+	    	.withOption(input).withOption(output).withOption(columns).withOption(seqFile).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
 	    CommandLine cmdLine = null;
@@ -110,6 +113,10 @@ public class AutoSqoop
 	    	this.output = cmdLine.getValue(output).toString();
 	    else
 	    	this.output = "hdfs://localhost:8020/user/" + System.getProperty("user.name") + "/sqoopOut/";
+	    if (cmdLine.hasOption(seqFile))
+	    	this.format = "SEQUENCE_FILE";
+	    else
+	    	this.format = "TEXT_FILE";
 		Console cons = System.console();
 		char[] pw = cons.readPassword("Password: ");
 		this.password = new String(pw);
@@ -231,7 +238,7 @@ public class AutoSqoop
 		connectorForm.getStringInput("table.columns").setValue(columns);
 		connectorForm.getStringInput("table.partitionColumn").setValue(key);
 		frameworkForm.getEnumInput("output.storageType").setValue("HDFS");
-		frameworkForm.getEnumInput("output.outputFormat").setValue("SEQUENCE_FILE");
+		frameworkForm.getEnumInput("output.outputFormat").setValue(format);
 		frameworkForm.getStringInput("output.outputDirectory").setValue(output + db);
 		frameworkForm.getIntegerInput("throttling.extractors").setValue(1);
 		frameworkForm.getIntegerInput("throttling.loaders").setValue(1);

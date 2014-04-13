@@ -1,5 +1,5 @@
 // AutoSqoop - no dump files, sudo not needed
-java -jar TextProject-0.0.1-jar-with-dependencies.jar autosqoop -n root -t sentences -k s_id -i /var/lib/mysql -o output/
+java -jar TextProject-0.0.1-jar-with-dependencies.jar autosqoop -n root -t sentences -k s_id -i /var/lib/mysql -o output/ -c sentence
 java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhost:8020/user/hadoop/seqs/0
 
 // Counts
@@ -15,6 +15,48 @@ java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhos
 sudo java -jar TextProject-0.0.1-jar-with-dependencies.jar sql2seq -n root -t sentences -i /var/lib/mysql -o hdfs://localhost:8020/user/michael/sql2seqOut/ -c sentence
 java -jar TextProject-0.0.1-jar-with-dependencies.jar seqdump -i hdfs://localhost:8020/user/michael/sql2seqOut/0
 
-// VecDump
+// ?
 
+$$$$$$$$
+ssh -X -C -o CompressionLevel=9 alek@hippo.cs.appstate.edu
+
+Mahout:
+export MAHOUT_LOCAL=;mahout seqdirectory -i file:///home/hadoop/TextFiles/ -o file:///home/hadoop/gutSeqs
+export MAHOUT_LOCAL=;mahout seq2sparse -i /user/hadoop/gutSeqs/ -o /user/hadoop/gutSparse/ --namedVector -wt tf 
+
+
+mahout cvb -i hdfs://aho:8020/user/hadoop/matrix/matrix -o cvbOut/ -k 20 -dict gutSparse/dictionary.file-* 
+mahout cvb -i hdfs://aho:8020/user/hadoop/matrix/matrix -o cvbOut/ -k 5 -dict hdfs://aho:8020/user/hadoop/gutSparse/dictionary.file-* -nt 15890060 -x 20 -dt cvbOut/docTopic -mt cvbOut/docTopic
+
+
+// Max DF Percentage?
+
+
+// COUNT
+mahout seqdumper -i gutSparse/dictionary.file-0 | tail -n 1
+2046042
+880088
+1050945
+1141254
+907838
+1574142
+909721
+920765
+3165906
+910662
+957640
+1425057
+
+15,890,060
+
+The total heapsize will need to be about (8bytes * numTopics * numTerms *
+2) + some for the the rest of the map-reduce stuff, stack etc.  So in your
+case, that's about 288MB without any object overhead or the mapreduce bits,
+so if you have 768MB heap per mapper, you should be safe.
+
+
+
+CUDA:
+1) export MAHOUT_LOCAL=; mahout seqdirectory -i file:///home/hadoop/TextFiles/ -o file:///usr/local/HadoopData/gutSeqs/
+2) export MAHOUT_LOCAL=; sudo time mahout seq2sparse -i file:///usr/local/HadoopData/gutSeqs/ -o file:///usr/local/HadoopData/gutSparse/ --namedVector -wt tf -md 5 -x 50 -seq
 
