@@ -300,19 +300,21 @@ public class SQL2Seq
 	 *     
 	 * @param database the original file before renaming.
 	 * @return The name of the database, whether it was modified or not.
+	 * @throws IOException
 	*/
-	private String renameDatabase(File database)
+	private String renameDatabase(File database) throws IOException
 	{
-		String oldName = database.getName();
+		String oldName = database.getCanonicalPath();
 		String newName = oldName.substring(0, oldName.length() - 6);
+		newName = newName.replace('-','_');
 		File newFile = new File(newName);
 		if (database.renameTo(newFile))
-			return newName;
+			return newFile.getName();
 		else
 		{
 			System.err.println("Error renaming database -> " + oldName);
 			System.err.println("Check privileges on database");
-			return oldName;
+			return database.getName();
 		}
 	}
 }

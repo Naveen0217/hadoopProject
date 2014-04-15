@@ -303,6 +303,7 @@ public class AutoSqoop
 	*/
 	private void submitJob(long jobId) 
 	{
+		System.out.println("Submitting job to server...");
 		MSubmission submission = client.startSubmission(jobId);
 		System.out.println("Status : " + submission.getStatus());
 		if (submission.getStatus().isRunning() && submission.getProgress() != -1)
