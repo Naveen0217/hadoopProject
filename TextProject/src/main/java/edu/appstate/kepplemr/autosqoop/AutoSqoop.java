@@ -7,8 +7,10 @@ import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.commandline.Parser;
+
 import java.util.List;
 import java.util.ResourceBundle;
+
 import org.apache.sqoop.client.SqoopClient;
 import org.apache.sqoop.model.MConnection;
 import org.apache.sqoop.model.MConnectionForms;
@@ -21,13 +23,19 @@ import org.apache.sqoop.submission.counter.Counter;
 import org.apache.sqoop.submission.counter.CounterGroup;
 import org.apache.sqoop.submission.counter.Counters;
 import org.apache.sqoop.validation.Status;
+
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import org.apache.sqoop.common.SqoopException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import edu.appstate.kepplemr.main.TextUtils;
 
 /**
@@ -43,6 +51,7 @@ public class AutoSqoop
 {
 	private static final Logger log = LoggerFactory.getLogger(AutoSqoop.class);
 	SqoopClient client;
+	private String hostname;
 	private final String username;
 	private final String password;
 	private final String table;
@@ -95,12 +104,21 @@ public class AutoSqoop
 	    try 
 	    {
 			cmdLine = parser.parse(args);
+	        Process proc = Runtime.getRuntime().exec("hostname");
+	        BufferedReader stdIn = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+	        this.hostname = stdIn.readLine();
 		} 
 	    catch (OptionException ex) 
 	    {
-	    	log.debug("Exception: ", ex);
+	    	log.debug("Exception on Option: ", ex);
 	        TextUtils.printHelp(group);
 	        System.exit(-1);
+		} 
+	    catch (IOException io) 
+		{
+			System.err.println("Could not ascertain local hostname.");
+			io.printStackTrace();
+			this.hostname = "localhost";
 		}
 	    this.username = cmdLine.getValue(mysqlName).toString();
 	    this.table = cmdLine.getValue(table).toString();
@@ -143,7 +161,7 @@ public class AutoSqoop
 		try
 		{
 			Class.forName("com.mysql.jdbc.Driver");
-			DriverManager.getConnection("jdbc:mysql://localhost/mysql", username, password);
+			DriverManager.getConnection("jdbc:mysql://" + hostname + "/mysql", username, password);
 		}
 		catch (SQLException ex)
 		{
@@ -203,14 +221,14 @@ public class AutoSqoop
 	 * @return Connection persistence ID returned from Sqoop2.
 	 * @throws SQLException database cannot be found/accessed.
 	*/
-	private long createConnection(String database) throws SQLException
+	private long createConnection(String database) throws SQLException, IOException
 	{
 		MConnection newCon = client.newConnection(1);
 		MConnectionForms conForms = newCon.getConnectorPart();
 		MConnectionForms frameworkForms = newCon.getFrameworkPart();
 		newCon.setName("AutoSqoopConnection");
 		// Prevent memory issues by telling SQL not to fetch the entire table into memory simultaneously.
-		conForms.getStringInput("connection.connectionString").setValue("jdbc:mysql://localhost/" + database + 
+		conForms.getStringInput("connection.connectionString").setValue("jdbc:mysql://" + hostname + "/" + database + 
 			"?&defaultFetchSize=1000&useCursorFetch=true");
 		conForms.getStringInput("connection.jdbcDriver").setValue("com.mysql.jdbc.Driver");
 		conForms.getStringInput("connection.username").setValue(username);
