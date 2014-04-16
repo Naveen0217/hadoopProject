@@ -50,7 +50,7 @@ import edu.appstate.kepplemr.main.TextUtils;
 public class AutoSqoop
 {
 	private static final Logger log = LoggerFactory.getLogger(AutoSqoop.class);
-	SqoopClient client;
+	private SqoopClient client;
 	private String hostname;
 	private final String username;
 	private final String password;
@@ -204,10 +204,18 @@ public class AutoSqoop
 	    				long jobId = createJob(connection, fileEntry.getName());
 	    				submitJob(jobId);
 	    			}
-	    			catch (Exception ex)
+	    			catch (SQLException ex)
 	    			{
 	    				ex.printStackTrace();
-	    			}
+	                    System.err.println("SQLState: " + ((SQLException)ex).getSQLState());
+	                    System.err.println("Error Code: " + ((SQLException)ex).getErrorCode());
+	                    System.err.println("Message: " + ex.getMessage());
+	    			} 
+	    			catch (IOException e) 
+	    			{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 	    		}
 	    	}
 	    }
