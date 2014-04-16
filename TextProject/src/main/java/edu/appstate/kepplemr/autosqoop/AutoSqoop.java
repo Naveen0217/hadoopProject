@@ -42,8 +42,7 @@ import edu.appstate.kepplemr.main.TextUtils;
 public class AutoSqoop
 {
 	private static final Logger log = LoggerFactory.getLogger(AutoSqoop.class);
-	String url = "http://mothership:12000/sqoop/";
-	SqoopClient client = new SqoopClient(url);
+	SqoopClient client;
 	private final String username;
 	private final String password;
 	private final String table;
@@ -69,25 +68,27 @@ public class AutoSqoop
 		DefaultOptionBuilder obuilder = new DefaultOptionBuilder();
 	    ArgumentBuilder abuilder = new ArgumentBuilder();
 	    GroupBuilder gbuilder = new GroupBuilder();
-	    Option mysqlName = obuilder.withLongName("mySqlName").withRequired(true).withArgument(abuilder.withName("mysqlName")
+	    Option mysqlName = obuilder.withLongName("mySqlName").withRequired(true).withArgument(abuilder.withName("<name>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("MySQL username to use").withShortName("n").create();
-	    Option table = obuilder.withLongName("sqlTable").withRequired(true).withArgument(abuilder.withName("sqlTable")
+	    Option table = obuilder.withLongName("sqlTable").withRequired(true).withArgument(abuilder.withName("<table>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("SQL Table to import").withShortName("t").create();
-	    Option tableKey = obuilder.withLongName("tableKey").withRequired(true).withArgument(abuilder.withName("tableKey")
+	    Option tableKey = obuilder.withLongName("tableKey").withRequired(true).withArgument(abuilder.withName("<key>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Primary key in table").withShortName("k").create();
-	    Option columns = obuilder.withLongName("columns").withRequired(true).withArgument(abuilder.withName("columns")
+	    Option columns = obuilder.withLongName("columns").withRequired(true).withArgument(abuilder.withName("<col(s)>")
 		    .withMinimum(1).withMaximum(1).create()).withDescription("Comma-separated list of columns to import")
 		    .withShortName("c").create();
-	    Option input = obuilder.withLongName("input").withRequired(false).withArgument(abuilder.withName("input")
+	    Option input = obuilder.withLongName("input").withRequired(false).withArgument(abuilder.withName("<dbDir>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Input directory (defaults to /var/lib/mysql)")
 	    	.withShortName("i").create();
-	    Option output = obuilder.withLongName("output").withRequired(false).withArgument(abuilder.withName("output")
+	    Option output = obuilder.withLongName("output").withRequired(false).withArgument(abuilder.withName("<hdfsDir>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Output directory (defaults to /user/$USERNAME/sqoopOut/)")
 	    	.withShortName("o").create();
+	    Option sqoopServer = obuilder.withLongName("sqoopServer").withRequired(false).withArgument(abuilder.withName("<server>")
+	    	.withMinimum(1).withMaximum(1).create()).withDescription("Address of Sqoop RPC server").withShortName("-s").create();
 	    Option seqFile = obuilder.withLongName("seqFileFormat").withRequired(false)
 				.withDescription("Store on HDFS in SequenceFile format").withShortName("s").create();
 	    Group group = gbuilder.withName("Options").withOption(mysqlName).withOption(table).withOption(tableKey)
-	    	.withOption(input).withOption(output).withOption(columns).withOption(seqFile).create();
+	    	.withOption(input).withOption(output).withOption(columns).withOption(seqFile).withOption(sqoopServer).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
 	    CommandLine cmdLine = null;
@@ -117,6 +118,12 @@ public class AutoSqoop
 	    	this.format = "SEQUENCE_FILE";
 	    else
 	    	this.format = "TEXT_FILE";
+	    String address;
+	    if (cmdLine.hasOption(sqoopServer))
+	    	address = cmdLine.getValue(sqoopServer).toString();
+	    else
+	    	address = "http://localhost:12000/sqoop/";
+	    this.client = new SqoopClient(address);
 		Console cons = System.console();
 		char[] pw = cons.readPassword("Password: ");
 		this.password = new String(pw);
