@@ -210,6 +210,12 @@ public class AutoSqoop
 	                    System.err.println("SQLState: " + ((SQLException)ex).getSQLState());
 	                    System.err.println("Error Code: " + ((SQLException)ex).getErrorCode());
 	                    System.err.println("Message: " + ex.getMessage());
+	                    Throwable t = ex.getCause();
+	                    while(t != null) 
+	                    {
+	                        System.out.println("Cause: " + t);
+	                        t = t.getCause();
+	                    }
 	    			} 
 	    			catch (IOException e) 
 	    			{
