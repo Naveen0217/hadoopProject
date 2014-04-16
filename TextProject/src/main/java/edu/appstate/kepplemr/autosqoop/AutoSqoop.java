@@ -242,7 +242,7 @@ public class AutoSqoop
 		MConnectionForms frameworkForms = newCon.getFrameworkPart();
 		newCon.setName("AutoSqoopConnection");
 		// Prevent memory issues by telling SQL not to fetch the entire table into memory simultaneously.
-		conForms.getStringInput("connection.connectionString").setValue("jdbc:mysql://" + hostname + "/" + database + 
+		conForms.getStringInput("connection.connectionString").setValue("jdbc:mysql://" + hostname + ":3306/" + database + 
 			"?&defaultFetchSize=1000&useCursorFetch=true");
 		conForms.getStringInput("connection.jdbcDriver").setValue("com.mysql.jdbc.Driver");
 		conForms.getStringInput("connection.username").setValue(username);
