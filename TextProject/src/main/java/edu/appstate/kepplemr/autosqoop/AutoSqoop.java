@@ -84,7 +84,7 @@ public class AutoSqoop
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Output directory (defaults to /user/$USERNAME/sqoopOut/)")
 	    	.withShortName("o").create();
 	    Option sqoopServer = obuilder.withLongName("sqoopServer").withRequired(false).withArgument(abuilder.withName("<server>")
-	    	.withMinimum(1).withMaximum(1).create()).withDescription("Address of Sqoop RPC server").withShortName("-s").create();
+	    	.withMinimum(1).withMaximum(1).create()).withDescription("Address of Sqoop RPC server").withShortName("-seq").create();
 	    Option seqFile = obuilder.withLongName("seqFileFormat").withRequired(false)
 				.withDescription("Store on HDFS in SequenceFile format").withShortName("s").create();
 	    Group group = gbuilder.withName("Options").withOption(mysqlName).withOption(table).withOption(tableKey)
