@@ -187,6 +187,7 @@ reboot()
     do
         sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager restart"
 	sshpass -p $passw ssh $node -t "service hadoop-hdfs-datanode restart"
+        sshpass -p $passw ssh $node -t "service gmond restart"
     done
     sshpass -p $passw ssh aho -t "service hadoop-yarn-resourcemanager restart"
 }
