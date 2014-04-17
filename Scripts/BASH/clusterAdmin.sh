@@ -53,6 +53,9 @@ install_node()
     yum install rsync
     yum install dmidecode
     yum install hdparm
+    scp -r $1:/etc/hadoop/conf /etc/hadoop/
+    mkdir -p /home/hadoop-yarn/cache/hadoop/nm-local-dir
+    chmod -R yarn /home/hadoop-yarn
     service hadoop-hdfs-datanode start
     service hadoop-yarn-nodemanager start
 }
