@@ -13,6 +13,7 @@ import org.apache.commons.cli2.commandline.Parser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.mahout.clustering.lda.cvb.CVB0Driver;
 import org.apache.mahout.common.HadoopUtil;
@@ -29,11 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.appstate.kepplemr.customanalyzer.GutenbergAnalyzer;
-//import org.apache.mahout.clustering.lda.cvb.CVB0Driver;
 
-public class Driver extends Configured
+public class Driver extends Configured implements Tool
 {
 	private static final Logger log = LoggerFactory.getLogger(Driver.class);
+	private static String output;
+	private static String input;
+	private static int maxFreq;
+	private static int minFreq;
 	
 	public static void main(String[] args)
 	{
@@ -41,10 +45,10 @@ public class Driver extends Configured
 		DefaultOptionBuilder obuilder = new DefaultOptionBuilder();
 	    ArgumentBuilder abuilder = new ArgumentBuilder();
 	    GroupBuilder gbuilder = new GroupBuilder();
-	    Option input = obuilder.withLongName("input").withRequired(true).withArgument(abuilder.withName("<input>")
+	    Option inputOp = obuilder.withLongName("input").withRequired(true).withArgument(abuilder.withName("<input>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("text document directory to cluster")
 	    	.withShortName("i").create();
-	    Option output = obuilder.withLongName("output").withRequired(true).withArgument(abuilder.withName("<outputDir>")
+	    Option outputOp = obuilder.withLongName("output").withRequired(true).withArgument(abuilder.withName("<outputDir>")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("output directory for the various stages")
 	    	.withShortName("o").create();
 	    Option maxDFpercent = obuilder.withLongName("maxDFpercent").withRequired(false)
@@ -53,7 +57,7 @@ public class Driver extends Configured
 	    Option minDFpercent = obuilder.withLongName("minDFpercent").withRequired(false)
 		    .withArgument(abuilder.withName("<minPercent>").withMinimum(1).withMaximum(1).create())
 		    .withDescription("minimum document frequency allowed for terms").withShortName("minDf").create();
-	    Group group = gbuilder.withName("Options").withOption(input).withOption(output).withOption(maxDFpercent)
+	    Group group = gbuilder.withName("Options").withOption(inputOp).withOption(outputOp).withOption(maxDFpercent)
 	    	.withOption(minDFpercent).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
@@ -68,9 +72,8 @@ public class Driver extends Configured
 	        TextUtils.printHelp(group);
 	        System.exit(-1);
 		}
-	    String inputDir = cmdLine.getValue(input).toString();
-	    String outputDir = cmdLine.getValue(output).toString();
-		Integer maxFreq, minFreq;
+	    input = cmdLine.getValue(inputOp).toString();
+	    output = cmdLine.getValue(outputOp).toString();
 	    if (cmdLine.hasOption(maxDFpercent))
 	    	maxFreq = Integer.parseInt(cmdLine.getValue(maxDFpercent).toString());
 	    else
@@ -79,57 +82,20 @@ public class Driver extends Configured
 	    	minFreq = Integer.parseInt(cmdLine.getValue(minDFpercent).toString());
 	    else
 	    	minFreq = 0;
-	    new Driver(inputDir, outputDir, minFreq, maxFreq);
-
-	    /*
-	    arguments = new String[14];
-	    arguments[0] = "-i";
-	    arguments[1] = outputDir + "sequenceFiles/";
-	    arguments[2] = "-o";
-	    arguments[3] = outputDir + "sparseVectors/";
-	    arguments[4] = "-x";
-	    arguments[5] = maxFreq.toString();
-	    arguments[6] = "-md";
-	    arguments[7] = minFreq.toString();
-	    arguments[8] = "-seq";
-	    arguments[9] = "--namedVector";
-	    arguments[10] = "-wt";
-	    arguments[11] = "tfidf";
-	    arguments[12] = "-a";
-	    arguments[13] = "edu.appstate.kepplemr.customanalyzer.GutenbergAnalyzer";
-	    try
+	    //new Driver(inputDir, outputDir, minFreq, maxFreq);
+	    try 
 	    {
-	    	//org.apache.mahout.fixes.SparseVectorsFromSequenceFiles.main(arguments);
-	    	SparseVectorsFromSequenceFiles.main(arguments);
-	    }
-	    catch (Exception ex)
+			ToolRunner.run(new Driver(), args);
+		} 
+	    catch (Exception e) 
 	    {
-	    	System.err.println("Exception -> " + ex.toString());
-	    	ex.printStackTrace();
-	    }
-	    arguments = new String[4];
-	    arguments[0] = "-i";
-	    arguments[1] = outputDir + "sparseVectors/tf-vectors/";
-	    arguments[2] = "-o";
-	    arguments[3] = outputDir + "sparseMatrix/";
-	    try
-	    {
-	    	RowIdJob.main(arguments);
-	    }
-	    catch (Exception ex)
-	    {
-	    	System.err.println("Exception -> " + ex.toString());
-	    	ex.printStackTrace();
-	    }
-	    arguments = new String[20];
-	    arguments[0] = "-i";
-	    arguments[1] = outputDir + "sparseMatrix/";
-	    // TBC
-	     * 
-	     */
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    
 	}
-	
-	public Driver(String input, String output, int minFreq, int maxFreq)
+
+	public int run(String[] args) throws Exception 
 	{
 		// Create SequenceFiles from Directory
 		SequenceFilesFromDirectory sf = new SequenceFilesFromDirectory();
@@ -153,9 +119,13 @@ public class Driver extends Configured
 	    int gramSize = 1;;
 	    int reduceTasks = 1;
 	    int chunkSize = 64; 
-	    Path inputDir = new Path(input);
-	    Path outputDir = new Path(output);
+	    Path inputDir = new Path(output + "sequenceFiles/");
+	    Path outputDir = new Path(output + "sparseVectors/");
 	    Configuration conf = getConf();
+		conf.addResource(new Path("file:///etc/hadoop/conf/hdfs-site.xml"));
+		conf.addResource(new Path("file:///etc/hadoop/conf/mapred-site.xml"));
+		conf.addResource(new Path("file:///etc/hadoop/conf/yarn-site.xml"));
+		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 	    Path tokenizedPath = new Path(output, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
 	    try 
 	    {
@@ -226,5 +196,6 @@ public class Driver extends Configured
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return 0;
 	}
 }
