@@ -8,6 +8,7 @@
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 DFS_DIRS=('/home/hdfs/' '/tmp/hdfs');
+GATEWAY=aho
 NODES=('tonto' 'aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 SLAVES=('tonto' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
@@ -253,6 +254,12 @@ while getopts "h:si:e:rn:adicoul" opt; do
            ;;
     esac
 done
+
+# On gateway node, make sure iptables is properly configured.
+if [ "$HOSTNAME" -eq "$GATEWAY" ]
+then
+    gateway_forward
+fi
 
 # will exist if agent is already up - load PID, etc.
 if [ -e $sshAgentInfo ]
