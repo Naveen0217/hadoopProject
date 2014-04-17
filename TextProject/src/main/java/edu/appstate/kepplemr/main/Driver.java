@@ -1,6 +1,5 @@
 package edu.appstate.kepplemr.main;
 import org.apache.log4j.LogManager;
-
 import edu.appstate.kepplemr.autosqoop.AutoSqoop;
 import edu.appstate.kepplemr.counts.Counts;
 import edu.appstate.kepplemr.hadoopconfig.ConfigPrinter;
@@ -49,6 +48,8 @@ public class Driver
 				case "sql2seq":
 					SQL2Seq.main(arguments);
 					break;
+				case "lda":
+					edu.appstate.kepplemr.lda.Driver.main(arguments);
 			}
 		}
 		catch (Exception ex) {}

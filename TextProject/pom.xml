@@ -65,6 +65,11 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.0</version>
+		</dependency>
 		<!-- Lucene dependencies -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>

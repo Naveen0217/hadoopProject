@@ -128,7 +128,7 @@ public class Driver extends Configured implements Tool
 	    Path tokenizedPath = new Path(output, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
 	    try 
 	    {
-	    	// Create TF Vecors
+	    	// Create TF Vectors
 			DocumentProcessor.tokenizeDocuments(inputDir, GutenbergAnalyzer.class, tokenizedPath, conf);
 			String tfDirName = DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER + "-toprune";
 	        DictionaryVectorizer.createTermFrequencyVectors(tokenizedPath,outputDir,
@@ -160,8 +160,8 @@ public class Driver extends Configured implements Tool
 			e.printStackTrace();
 		}
 	    // Create SparseMatrix
-	    arguments[1] = outputDir + "sparseVectors/tf-vectors/";
-	    arguments[3] = outputDir + "sparseMatrix/";
+	    arguments[1] = output + "sparseVectors/tf-vectors/";
+	    arguments[3] = output + "sparseMatrix/";
 	    try 
 	    {
 			ToolRunner.run(new RowIdJob(), arguments);
@@ -174,17 +174,18 @@ public class Driver extends Configured implements Tool
 	    // Run CVB/LDA...
 	    arguments = new String[12];
 	    arguments[0] = "-i";
-	    arguments[1] = outputDir + "sparseMatrix/matrix/";
+	    arguments[1] = output + "sparseMatrix/matrix/";
 	    arguments[2] = "-o";
-	    arguments[3] = outputDir + "cvbOut/";
-	    arguments[4] = "-x";
+	    arguments[3] = output + "cvbOut/";
+	    // Works only with fully-qualified argument names.
+	    arguments[4] = "--maxIter";
 	    arguments[5] = "50";
-	    arguments[6] = "-k";
+	    arguments[6] = "--num_topics";
 	    arguments[7] = "50";
 	    arguments[8] = "-nt";
 	    arguments[9] = "198123";
 	    arguments[10] = "-dict";
-	    arguments[11] = outputDir + "sparseVectors/dictionary.file-*";
+	    arguments[11] = output + "sparseVectors/dictionary.file-*";
 	    // Smoothing?
 	    try 
 	    {
