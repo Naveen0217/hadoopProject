@@ -7,10 +7,8 @@ import org.apache.commons.cli2.builder.ArgumentBuilder;
 import org.apache.commons.cli2.builder.DefaultOptionBuilder;
 import org.apache.commons.cli2.builder.GroupBuilder;
 import org.apache.commons.cli2.commandline.Parser;
-
 import java.util.List;
 import java.util.ResourceBundle;
-
 import org.apache.sqoop.client.SqoopClient;
 import org.apache.sqoop.model.MConnection;
 import org.apache.sqoop.model.MConnectionForms;
@@ -23,7 +21,6 @@ import org.apache.sqoop.submission.counter.Counter;
 import org.apache.sqoop.submission.counter.CounterGroup;
 import org.apache.sqoop.submission.counter.Counters;
 import org.apache.sqoop.validation.Status;
-
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.io.BufferedReader;
@@ -31,11 +28,9 @@ import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import org.apache.sqoop.common.SqoopException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import edu.appstate.kepplemr.main.TextUtils;
 
 /**
@@ -200,8 +195,11 @@ public class AutoSqoop
 	    			System.out.println("Found database: " + fileEntry.getName());
 	    			try
 	    			{
-	    				long connection = createConnection(fileEntry.getName());
-	    				long jobId = createJob(connection, fileEntry.getName());
+	    				String dbName = fileEntry.getName();
+						if (dbName.contains("-mysql"))
+							dbName = renameDatabase(fileEntry);
+	    				long connection = createConnection(dbName);
+	    				long jobId = createJob(connection, dbName);
 	    				submitJob(jobId);
 	    			}
 	    			catch (SQLException ex)
@@ -373,5 +371,34 @@ public class AutoSqoop
 			  for (MInput<?> mi : mis)
 				  System.out.println(resource.getString(mi.getLabelKey()) + " : " + mi.getValue());
 		  }
+	}
+	
+	/**
+	 * renameDatabase -> convenience method to rename databases by stripping
+	 *   the annoying '-mysql' suffix. 
+	 *     
+	 * Note:This also avoids problems with new MySQL 5.1 encodings, which would
+	 *   otherwise require ALTER DATABASE UPGRADE DIRECTORY NAME to re-encode
+	 *   the '-' character found in the Corpora databases as Unicode '@002d',
+	 *   making it safe for all systems. 
+	 *     
+	 * @param database the original file before renaming.
+	 * @return The name of the database, whether it was modified or not.
+	 * @throws IOException
+	*/
+	private String renameDatabase(File database) throws IOException
+	{
+		String oldName = database.getCanonicalPath();
+		String newName = oldName.substring(0, oldName.length() - 6);
+		newName = newName.replace('-','_');
+		File newFile = new File(newName);
+		if (database.renameTo(newFile))
+			return newFile.getName();
+		else
+		{
+			System.err.println("Error renaming database -> " + oldName);
+			System.err.println("Check privileges on database");
+			return database.getName();
+		}
 	}
 }
