@@ -1,8 +1,10 @@
 package edu.appstate.kepplemr.main;
 import org.apache.log4j.LogManager;
 import edu.appstate.kepplemr.autosqoop.AutoSqoop;
+import edu.appstate.kepplemr.benchmark.Benchmark;
 import edu.appstate.kepplemr.counts.Counts;
 import edu.appstate.kepplemr.hadoopconfig.ConfigPrinter;
+import edu.appstate.kepplemr.lda.LDADriver;
 import edu.appstate.kepplemr.nullseqdump.SeqDump;
 import edu.appstate.kepplemr.sql2seq.SQL2Seq;
 
@@ -49,7 +51,11 @@ public class Driver
 					SQL2Seq.main(arguments);
 					break;
 				case "lda":
-					edu.appstate.kepplemr.lda.LDADriver.main(arguments);
+					LDADriver.main(arguments);
+					break;
+				case "benchmark":
+					Benchmark.main(arguments);
+					break;
 			}
 		}
 		catch (Exception ex) {}
