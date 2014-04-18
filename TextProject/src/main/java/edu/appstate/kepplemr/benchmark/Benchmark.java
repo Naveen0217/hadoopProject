@@ -1,4 +1,5 @@
 package edu.appstate.kepplemr.benchmark;
+import java.io.IOException;
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Group;
 import org.apache.commons.cli2.Option;
@@ -10,8 +11,10 @@ import org.apache.commons.cli2.commandline.Parser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.examples.Sort;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.mahout.common.HadoopUtil;
 
 public class Benchmark extends Configured implements Tool
 {
@@ -58,7 +61,7 @@ public class Benchmark extends Configured implements Tool
 		return 0;
 	}
 	
-	public void runTests(String[] arguments, int iterations)
+	public void runTests(String[] arguments, int iterations) throws IOException
 	{
 		Configuration conf = new Configuration();
 		conf.set("mapred.compress.map.output","false");
@@ -66,15 +69,24 @@ public class Benchmark extends Configured implements Tool
 		long[] middle = new long[iterations];
 		long[] after = new long[iterations];
 		for (int i = 0; i < iterations; i++)
+		{
+			HadoopUtil.delete(conf, new Path(arguments[1]));
 			before[i] = runSort(arguments);
+		}
 		conf.set("mapred.compress.map.output", "true");
 		conf.set("mapred.map.output.compress.codec", "org.apache.hadoop.io.compress.BZip2Codec");
 		for (int i = 0; i < iterations; i++)
+		{
+			HadoopUtil.delete(conf, new Path(arguments[1]));
 			middle[i] = runSort(arguments);
+		}
 		conf.set("mapred.compress.map.output", "true");
 		conf.set("mapred.map.output.compress.codec", "org.apache.hadoop.io.compress.DefaultCodec");
 		for (int i = 0; i < iterations; i++)
+		{
+			HadoopUtil.delete(conf, new Path(arguments[1]));
 			after[i] = runSort(arguments);
+		}
 		// Display Results
 		for (int i = 0; i < iterations; i++)
 			System.out.println("Before Time -> " + before[i]);
