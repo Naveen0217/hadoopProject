@@ -8,6 +8,7 @@
 HOSTNAME='echo $HOSTNAME | sed 's/\..*//''
 SCRIPT_CONF_DIR=/home/hadoop/MastersProject/Machines/
 DFS_DIRS=('/home/hdfs/' '/tmp/hdfs');
+GATEWAY=aho
 NODES=('tonto' 'aho' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 SLAVES=('tonto' 'tito' 'spino' 'nano' 'ammo' 'techno' 'dryo' 'grypo' 'anono' 'seismo' 'rhino' 'maino' 'newo' 'appo' 'drapo' 'mino' 'hippo' 'kepo');
 CLASS_ACER=('nano' 'ammo' 'spino' 'techno' 'dryo' 'grypo' 'seismo' 'anono');
@@ -52,22 +53,24 @@ install_node()
     yum install rsync
     yum install dmidecode
     yum install hdparm
+    scp -r $1:/etc/hadoop/conf /etc/hadoop/
+    mkdir -p /home/hadoop-yarn/cache/hadoop/nm-local-dir
+    chmod -R yarn /home/hadoop-yarn
     service hadoop-hdfs-datanode start
     service hadoop-yarn-nodemanager start
 }
 
 # Ex: sudo ./clusterAdmin.sh -d
-# NOTE: Must be run as su/sudo
 reformat_datanodes()
 {
     stty -echo
-    read -p "Password: " passw; echo
+    read -p "Admin Password: " passw; echo
     stty echo
     for node in ${NODES[@]}
     do
     	for dir in ${DFS_DIRS[@]}
     	do
-		sshpass -p $passw ssh $node -t "rm -f $dir/dfs/data/current/VERSION"
+		sshpass -p $passw ssh root@$node -t "rm -f $dir/dfs/data/current/VERSION"
 	done
     done
 }
@@ -146,7 +149,6 @@ execute_nodes()
     done
 }
 
-# Should be run as root/sudo'd
 # Note: master node must have installed sshpass
 admin_sync()
 {
@@ -155,13 +157,13 @@ admin_sync()
     stty echo
     for node in ${NODES[@]}
     do
-        sshpass -p $passw scp /etc/hosts $node:/etc/hosts
-        sshpass -p $passw scp /home/hadoop/.ssh/authorized_keys $node:/home/hadoop/.ssh/authorized_keys
-	sshpass -p $passw ssh $node -t chown hadoop /home/hadoop/.ssh/authorized_keys
-	sshpass -p $passw scp /home/hadoop/.bash_profile $node:/home/hadoop/.bash_profile
-	sshpass -p $passw scp /home/hadoop/.bashrc $node:/home/hadoop/.bashrc
-	sshpass -p $passw scp /home/hadoop/clusterAdmin.sh $node:/home/hadoop/clusterAdmin.sh
-        sshpass -p $passw ssh $node -t "chown hadoop:hadoop /etc/hadoop/conf/*"
+        sshpass -p $passw scp /etc/hosts root@$node:/etc/hosts
+        sshpass -p $passw scp /home/hadoop/.ssh/authorized_keys root@$node:/home/hadoop/.ssh/authorized_keys
+	sshpass -p $passw ssh root@$node -t chown hadoop /home/hadoop/.ssh/authorized_keys
+	sshpass -p $passw scp /home/hadoop/.bash_profile root@$node:/home/hadoop/.bash_profile
+	sshpass -p $passw scp /home/hadoop/.bashrc root@$node:/home/hadoop/.bashrc
+	sshpass -p $passw scp /home/hadoop/clusterAdmin.sh root@$node:/home/hadoop/clusterAdmin.sh
+        sshpass -p $passw ssh root@$node -t "chown hadoop:hadoop /etc/hadoop/conf/*"
 	#sshpass -p $passw scp /etc/sysctl.conf $node:/etc/sysctl.conf
 	#sshpass -p $passw scp /etc/security/limits.conf $node:/etc/security/limits.conf
     done
@@ -177,7 +179,6 @@ init_passphrases()
 }
 
 # sudo ./clusterAdmin.sh -r
-# NOTE: must be run as su/sudo
 reboot()
 {
     stty -echo
@@ -185,11 +186,11 @@ reboot()
     stty echo
     for node in ${NODES[@]}
     do
-        sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager restart"
-	sshpass -p $passw ssh $node -t "service hadoop-hdfs-datanode restart"
-        sshpass -p $passw ssh $node -t "service gmond restart"
+        sshpass -p $passw ssh root@$node -t "service hadoop-yarn-nodemanager restart"
+	sshpass -p $passw ssh root@$node -t "service hadoop-hdfs-datanode restart"
+        sshpass -p $passw ssh root@$node -t "service gmond restart"
     done
-    sshpass -p $passw ssh aho -t "service hadoop-yarn-resourcemanager restart"
+    sshpass -p $passw ssh root@aho -t "service hadoop-yarn-resourcemanager restart"
 }
 
 # ./clusterAdmin.sh -f
@@ -202,7 +203,6 @@ gateway_forward()
 }
 
 # sudo ./clusterAdmin.sh -s
-# NOTE: must be run as root
 solo_mode()
 {
     stty -echo
@@ -210,11 +210,11 @@ solo_mode()
     stty echo
     for node in ${NODES[@]}
     do
-        sshpass -p $passw ssh $node -t "service hadoop-yarn-nodemanager stop"
+        sshpass -p $passw ssh root@$node -t "service hadoop-yarn-nodemanager stop"
     done
     sudo -u hadoop conf_sync NEWO:NEWO_SOLO
     service hadoop-yarn-nodemanager restart
-    sshpass -p $passw ssh aho -t "service hadoop-yarn-resourcemanager restart"
+    sshpass -p $passw ssh root@aho -t "service hadoop-yarn-resourcemanager restart"
 }
 
 # sudo ./clusterAdmin.sh -u
@@ -253,6 +253,12 @@ while getopts "h:si:e:rn:adicoul" opt; do
            ;;
     esac
 done
+
+# On gateway node, make sure iptables is properly configured.
+if [ "$HOSTNAME" == "$GATEWAY" ]
+then
+    gateway_forward
+fi
 
 # will exist if agent is already up - load PID, etc.
 if [ -e $sshAgentInfo ]

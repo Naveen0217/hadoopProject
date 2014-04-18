@@ -14,6 +14,10 @@
     <value>true</value>
   </property>
   <property>
+    <name>mapreduce.map.output.compress.codec</name>
+    <value>org.apache.hadoop.io.compress.BZip2Codec</value>
+  </property>
+  <property>
     <name>mapreduce.map.log.level</name>
     <value>WARN</value>
   </property>
@@ -80,10 +84,5 @@
   <property>
     <name>mapreduce.reduce.java.opts</name>
     <value>-Xmx1800m</value>
-  </property>
-  <property>
-    <name>mapreduce.tasktracker.reduce.tasks.maximum</name>
-    <value>0</value>
-    <final>true</final>
   </property>
 </configuration>
