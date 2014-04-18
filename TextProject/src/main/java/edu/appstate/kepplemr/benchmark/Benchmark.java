@@ -53,7 +53,7 @@ public class Benchmark extends Configured implements Tool
 		}
 		int iterations = 3;
 	    if (cmdLine.hasOption(iter))
-	    	iterations = Integer.parseInt(cmdLine.getValue(input).toString());
+	    	iterations = Integer.parseInt(cmdLine.getValue(iter).toString());
 		String inputDir = cmdLine.getValue(input).toString();
 	    String outputDir = cmdLine.getValue(output).toString();
 	    String[] arguments = { inputDir, outputDir };
