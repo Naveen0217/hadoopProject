@@ -1,5 +1,6 @@
 package edu.appstate.kepplemr.benchmark;
 import java.io.IOException;
+
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Group;
 import org.apache.commons.cli2.Option;
@@ -71,21 +72,21 @@ public class Benchmark extends Configured implements Tool
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
-			before[i] = runSort(arguments);
+			before[i] = runSort(arguments, conf);
 		}
 		conf.set("mapred.compress.map.output", "true");
 		conf.set("mapred.map.output.compress.codec", "org.apache.hadoop.io.compress.BZip2Codec");
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
-			middle[i] = runSort(arguments);
+			middle[i] = runSort(arguments, conf);
 		}
 		conf.set("mapred.compress.map.output", "true");
 		conf.set("mapred.map.output.compress.codec", "org.apache.hadoop.io.compress.DefaultCodec");
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
-			after[i] = runSort(arguments);
+			after[i] = runSort(arguments, conf);
 		}
 		// Display Results
 		for (int i = 0; i < iterations; i++)
@@ -96,12 +97,13 @@ public class Benchmark extends Configured implements Tool
 			System.out.println("After Time -> " + after[i]);
 	}
 	
-	public long runSort(String[] arguments)
+	@SuppressWarnings("rawtypes")
+	public long runSort(String[] arguments, Configuration conf)
 	{
 		final long startTime = System.currentTimeMillis();
 		try 
 		{
-			Sort.main(arguments);
+			ToolRunner.run(conf, new Sort(), arguments);
 		} 
 		catch (Exception ex) 
 		{
