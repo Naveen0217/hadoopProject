@@ -49,7 +49,7 @@ public class Driver
 					SQL2Seq.main(arguments);
 					break;
 				case "lda":
-					edu.appstate.kepplemr.lda.Driver.main(arguments);
+					edu.appstate.kepplemr.lda.LDADriver.main(arguments);
 			}
 		}
 		catch (Exception ex) {}
