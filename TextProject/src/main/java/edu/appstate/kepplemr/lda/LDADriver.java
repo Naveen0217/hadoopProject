@@ -1,5 +1,4 @@
 package edu.appstate.kepplemr.lda;
-import java.io.IOException;
 import java.util.List;
 import org.apache.commons.cli2.CommandLine;
 import org.apache.commons.cli2.Group;
@@ -37,6 +36,9 @@ public class LDADriver extends Configured implements Tool
 	private static String input;
 	private static int maxFreq;
 	private static int minFreq;
+	private static boolean generateSeqs;
+	private static boolean generateSparse;
+	private static boolean generateMatrix;
 	
 	public static void main(String[] args)
 	{
@@ -56,8 +58,14 @@ public class LDADriver extends Configured implements Tool
 	    Option minDFpercent = obuilder.withLongName("minDFpercent").withRequired(false)
 		    .withArgument(abuilder.withName("<minPercent>").withMinimum(1).withMaximum(1).create())
 		    .withDescription("minimum document frequency allowed for terms").withShortName("minDf").create();
+	    Option skipSeqDir = obuilder.withLongName("skipSeqDir").withRequired(false)
+	    	.withDescription("skip SequenceFile generation stage").withShortName("s1").create();
+	    Option skipSparse = obuilder.withLongName("skipSparse").withRequired(false)
+		    .withDescription("skip SparseVector generation stage").withShortName("s2").create();
+	    Option skipMatrix = obuilder.withLongName("skipMatrix").withRequired(false)
+			.withDescription("skip SparseMatrix generation stage").withShortName("s3").create();	    
 	    Group group = gbuilder.withName("Options").withOption(inputOp).withOption(outputOp).withOption(maxDFpercent)
-	    	.withOption(minDFpercent).create();
+	    	.withOption(minDFpercent).withOption(skipSeqDir).withOption(skipSparse).withOption(skipMatrix).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
 	    CommandLine cmdLine = null;
@@ -73,6 +81,9 @@ public class LDADriver extends Configured implements Tool
 		}
 	    input = cmdLine.getValue(inputOp).toString();
 	    output = cmdLine.getValue(outputOp).toString();
+	    generateSeqs = !cmdLine.hasOption(skipSeqDir);
+	    generateSparse = !cmdLine.hasOption(skipSparse);
+	    generateMatrix = !cmdLine.hasOption(skipMatrix);
 	    if (cmdLine.hasOption(maxDFpercent))
 	    	maxFreq = Integer.parseInt(cmdLine.getValue(maxDFpercent).toString());
 	    else
@@ -94,96 +105,100 @@ public class LDADriver extends Configured implements Tool
 	    
 	}
 
+	// LogNorm set to true, bigrams
 	public int run(String[] args) throws Exception 
 	{
-		// Create SequenceFiles from Directory
-		SequenceFilesFromDirectory sf = new SequenceFilesFromDirectory();
-	    String[] arguments = { "-i", "", "-o", "" };
-	    arguments[1] = input;
-	    arguments[3] = output + "sequenceFiles/";
-	    try
-	    {
-	    	sf.run(arguments);
-	    }
-	    catch (Exception ex)
-	    {
-	    	System.err.println("Exception -> " + ex.toString());
-	    }
-	    // Create SparseVectors from SequenceFile Directory
-	    boolean logNormalize = false;
-	    boolean seqVects = true;
-	    boolean namedVects = true;
-	    float minLLR = LLRReducer.DEFAULT_MIN_LLR;
-	    float norm = PartialVectorMerger.NO_NORMALIZING;
-	    int gramSize = 1;;
-	    int reduceTasks = 1;
-	    int chunkSize = 64; 
-	    Path inputDir = new Path(output + "sequenceFiles/");
-	    Path outputDir = new Path(output + "sparseVectors/");
-	    Configuration conf = getConf();
-		conf.addResource(new Path("file:///etc/hadoop/conf/hdfs-site.xml"));
-		conf.addResource(new Path("file:///etc/hadoop/conf/mapred-site.xml"));
-		conf.addResource(new Path("file:///etc/hadoop/conf/yarn-site.xml"));
-		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
-	    Path tokenizedPath = new Path(output, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
-	    try 
-	    {
-	    	// Create TF Vectors
-			DocumentProcessor.tokenizeDocuments(inputDir, GutenbergAnalyzer.class, tokenizedPath, conf);
-			String tfDirName = DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER + "-toprune";
-	        DictionaryVectorizer.createTermFrequencyVectors(tokenizedPath,outputDir,
-	        	tfDirName, conf, 2, gramSize, minLLR, norm, logNormalize, reduceTasks, chunkSize, seqVects, namedVects);
-	        Pair<Long[], List<Path>> docFrequenciesFeatures = null;
-	        docFrequenciesFeatures = TFIDFConverter.calculateDF(new Path(outputDir, tfDirName), outputDir, conf, chunkSize);
-		    long vectorCount = docFrequenciesFeatures.getFirst()[1];
-		    long maxDFThreshold = (long) (vectorCount * (maxFreq / 100.0f));
-	        Path tfDir = new Path(outputDir, tfDirName);
-	        Path prunedTFDir = new Path(outputDir, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER);
-	        Path prunedPartialTFDir = new Path(outputDir, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER + "-partial");
-	        HighDFWordsPruner.pruneVectors(tfDir, prunedTFDir, prunedPartialTFDir, maxDFThreshold, minFreq, conf,
-	        	docFrequenciesFeatures, norm, logNormalize, reduceTasks);
-	        HadoopUtil.delete(new Configuration(conf), tfDir);
-		} 
-	    catch (ClassNotFoundException e) 
-	    {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-	    catch (IOException e) 
-	    {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-	    catch (InterruptedException e) 
-	    {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String[] arguments = { "-i", "", "-o", "" };
+		if (generateSeqs)
+		{
+			SequenceFilesFromDirectory sf = new SequenceFilesFromDirectory();
+		    arguments[1] = input;
+		    arguments[3] = output + "sequenceFiles/";
+		    try
+		    {
+		    	sf.run(arguments);
+		    }
+		    catch (Exception ex)
+		    {
+		    	System.err.println("Exception creating SequenceFiles -> " + ex.toString());
+		    	ex.printStackTrace();
+		    }
 		}
-	    // Create SparseMatrix
-	    arguments[1] = output + "sparseVectors/tf-vectors/";
-	    arguments[3] = output + "sparseMatrix/";
-	    try 
-	    {
-			ToolRunner.run(new RowIdJob(), arguments);
-		} 
-	    catch (Exception e) 
-	    {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (generateSparse)
+		{
+		    // Create SparseVectors from SequenceFile Directory
+		    boolean logNormalize = true;
+		    boolean seqVects = true;
+		    boolean namedVects = true;
+		    float minLLR = LLRReducer.DEFAULT_MIN_LLR;
+		    float norm = PartialVectorMerger.NO_NORMALIZING;
+		    //float norm = Float.
+		    int gramSize = 2;
+		    int reduceTasks = 1;
+		    int chunkSize = 64; 
+		    Path inputDir = new Path(output + "sequenceFiles/");
+		    Path outputDir = new Path(output + "sparseVectors/");
+		    Configuration conf = getConf();
+			conf.addResource(new Path("file:///etc/hadoop/conf/hdfs-site.xml"));
+			conf.addResource(new Path("file:///etc/hadoop/conf/mapred-site.xml"));
+			conf.addResource(new Path("file:///etc/hadoop/conf/yarn-site.xml"));
+			conf.addResource(new Path("file:///etc/hadoop/conf/core-site.xml"));
+			conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+		    Path tokenizedPath = new Path(output, DocumentProcessor.TOKENIZED_DOCUMENT_OUTPUT_FOLDER);
+		    try 
+		    {
+		    	// Create TF Vectors
+				DocumentProcessor.tokenizeDocuments(inputDir, GutenbergAnalyzer.class, tokenizedPath, conf);
+				String tfDirName = DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER + "-toprune";
+		        DictionaryVectorizer.createTermFrequencyVectors(tokenizedPath,outputDir,
+		        	tfDirName, conf, 2, gramSize, minLLR, norm, logNormalize, reduceTasks, chunkSize, seqVects, namedVects);
+		        Pair<Long[], List<Path>> docFrequenciesFeatures = null;
+		        docFrequenciesFeatures = TFIDFConverter.calculateDF(new Path(outputDir, tfDirName), outputDir, conf, chunkSize);
+			    long vectorCount = docFrequenciesFeatures.getFirst()[1];
+			    long maxDFThreshold = (long) (vectorCount * (maxFreq / 100.0f));
+		        Path tfDir = new Path(outputDir, tfDirName);
+		        Path prunedTFDir = new Path(outputDir, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER);
+		        Path prunedPartialTFDir = new Path(outputDir, DictionaryVectorizer.DOCUMENT_VECTOR_OUTPUT_FOLDER + "-partial");
+		        HighDFWordsPruner.pruneVectors(tfDir, prunedTFDir, prunedPartialTFDir, maxDFThreshold, minFreq, conf,
+		        	docFrequenciesFeatures, norm, logNormalize, reduceTasks);
+		        HadoopUtil.delete(new Configuration(conf), tfDir);
+			} 
+		    catch (Exception ex) 
+		    {
+		    	System.err.println("Error while generating sparse vectors -> " + ex);
+				ex.printStackTrace();
+			} 			
+		}
+		if (generateMatrix)
+		{
+		    // Create SparseMatrix
+		    arguments[1] = output + "sparseVectors/tf-vectors/";
+		    arguments[3] = output + "sparseMatrix/";
+		    try 
+		    {
+				ToolRunner.run(new RowIdJob(), arguments);
+			} 
+		    catch (Exception e) 
+		    {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	    // Run CVB/LDA...
 	    arguments = new String[12];
 	    arguments[0] = "-i";
-	    arguments[1] = output + "sparseMatrix/matrix/";
+	    arguments[1] = output + "sparseMatrix/matrix";
 	    arguments[2] = "-o";
 	    arguments[3] = output + "cvbOut/";
 	    // Works only with fully-qualified argument names.
 	    arguments[4] = "--maxIter";
 	    arguments[5] = "50";
 	    arguments[6] = "--num_topics";
-	    arguments[7] = "50";
+	    arguments[7] = "100";
 	    arguments[8] = "-nt";
-	    arguments[9] = "198123";
+	    // 3274483 + 2721162 = 5995645
+	    arguments[9] = "5995645";
+	    //arguments[9] = 198123;
 	    arguments[10] = "-dict";
 	    arguments[11] = output + "sparseVectors/dictionary.file-*";
 	    // Smoothing?
