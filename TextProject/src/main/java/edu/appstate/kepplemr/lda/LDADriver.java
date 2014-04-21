@@ -36,9 +36,12 @@ public class LDADriver extends Configured implements Tool
 	private static String input;
 	private static int maxFreq;
 	private static int minFreq;
+	private static int size;
+	private static int k;
 	private static boolean generateSeqs;
 	private static boolean generateSparse;
 	private static boolean generateMatrix;
+	private static boolean runLDA;
 	
 	public static void main(String[] args)
 	{
@@ -58,14 +61,23 @@ public class LDADriver extends Configured implements Tool
 	    Option minDFpercent = obuilder.withLongName("minDFpercent").withRequired(false)
 		    .withArgument(abuilder.withName("<minPercent>").withMinimum(1).withMaximum(1).create())
 		    .withDescription("minimum document frequency allowed for terms").withShortName("minDf").create();
+	    Option kValue = obuilder.withLongName("k-value").withRequired(true)
+	    	.withArgument(abuilder.withName("<num_topics>").withMinimum(1).withMaximum(1).create())
+	    	.withDescription("number of topics to search for").withShortName("k").create();
 	    Option skipSeqDir = obuilder.withLongName("skipSeqDir").withRequired(false)
 	    	.withDescription("skip SequenceFile generation stage").withShortName("s1").create();
 	    Option skipSparse = obuilder.withLongName("skipSparse").withRequired(false)
 		    .withDescription("skip SparseVector generation stage").withShortName("s2").create();
 	    Option skipMatrix = obuilder.withLongName("skipMatrix").withRequired(false)
-			.withDescription("skip SparseMatrix generation stage").withShortName("s3").create();	    
+			.withDescription("skip SparseMatrix generation stage").withShortName("s3").create();
+	    Option skipLda = obuilder.withLongName("skipLda").withRequired(false)
+			.withDescription("skip LDA analysis stage").withShortName("s4").create();
+	    Option dictSize = obuilder.withLongName("dict Size").withRequired(true)
+			.withArgument(abuilder.withName("<# words>").withMinimum(1).withMaximum(1).create())
+			.withDescription("number of words present in all dictionaries").withShortName("size").create();
 	    Group group = gbuilder.withName("Options").withOption(inputOp).withOption(outputOp).withOption(maxDFpercent)
-	    	.withOption(minDFpercent).withOption(skipSeqDir).withOption(skipSparse).withOption(skipMatrix).create();
+	    	.withOption(minDFpercent).withOption(skipSeqDir).withOption(skipSparse).withOption(skipMatrix)
+	    	.withOption(skipLda).withOption(kValue).withOption(dictSize).create();
 	    Parser parser = new Parser();
 	    parser.setGroup(group);
 	    CommandLine cmdLine = null;
@@ -79,11 +91,14 @@ public class LDADriver extends Configured implements Tool
 	        TextUtils.printHelp(group);
 	        System.exit(-1);
 		}
+	    k = Integer.parseInt(cmdLine.getValue(kValue).toString());
 	    input = cmdLine.getValue(inputOp).toString();
 	    output = cmdLine.getValue(outputOp).toString();
 	    generateSeqs = !cmdLine.hasOption(skipSeqDir);
 	    generateSparse = !cmdLine.hasOption(skipSparse);
 	    generateMatrix = !cmdLine.hasOption(skipMatrix);
+	    runLDA = !cmdLine.hasOption(skipLda);
+	    size = Integer.parseInt(cmdLine.getValue(dictSize).toString());
 	    if (cmdLine.hasOption(maxDFpercent))
 	    	maxFreq = Integer.parseInt(cmdLine.getValue(maxDFpercent).toString());
 	    else
@@ -184,32 +199,36 @@ public class LDADriver extends Configured implements Tool
 				e.printStackTrace();
 			}
 		}
-	    // Run CVB/LDA...
-	    arguments = new String[12];
-	    arguments[0] = "-i";
-	    arguments[1] = output + "sparseMatrix/matrix";
-	    arguments[2] = "-o";
-	    arguments[3] = output + "cvbOut/";
-	    // Works only with fully-qualified argument names.
-	    arguments[4] = "--maxIter";
-	    arguments[5] = "30";
-	    arguments[6] = "--num_topics";
-	    arguments[7] = "20";
-	    arguments[8] = "-nt";
-	    // 3274483 + 2721162 = 5995645
-	    arguments[9] = "5995645";
-	    //arguments[9] = 198123;
-	    arguments[10] = "-dict";
-	    arguments[11] = output + "sparseVectors/dictionary.file-*";
-	    // Smoothing?
-	    try 
-	    {
-			CVB0Driver.main(arguments);
-		} 
-	    catch (Exception e) 
-	    {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (runLDA)
+		{
+		    // Run CVB/LDA...
+		    arguments = new String[12];
+		    arguments[0] = "-i";
+		    arguments[1] = output + "sparseMatrix/matrix";
+		    arguments[2] = "-o";
+		    arguments[3] = output + "cvbOut/";
+		    // Works only with fully-qualified argument names.
+		    arguments[4] = "--maxIter";
+		    arguments[5] = "30";
+		    arguments[6] = "--num_topics";
+		    arguments[7] = new Integer(k).toString();
+		    arguments[8] = "-nt";
+		    // 3274483 + 2721162 = 5995645
+		    //arguments[9] = "5995645";
+		    arguments[9] = new Integer(size).toString();
+		    //arguments[9] = 198123;
+		    arguments[10] = "-dict";
+		    arguments[11] = output + "sparseVectors/dictionary.file-*";
+		    // Smoothing?
+		    try 
+		    {
+				CVB0Driver.main(arguments);
+			} 
+		    catch (Exception e) 
+		    {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return 0;
 	}
