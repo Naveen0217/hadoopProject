@@ -33,10 +33,10 @@ public class Benchmark extends Configured implements Tool
 	    ArgumentBuilder abuilder = new ArgumentBuilder();
 	    GroupBuilder gbuilder = new GroupBuilder();
 	    Option input = obuilder.withLongName("input").withRequired(true).withArgument(abuilder.withName("<randomDataDir>")
-	    	.withMinimum(1).withMaximum(1).create()).withDescription("Input directory (defaults to /var/lib/mysql)")
+	    	.withMinimum(1).withMaximum(1).create()).withDescription("random input data")
 		    .withShortName("i").create();
 	    Option output = obuilder.withLongName("output").withRequired(true).withArgument(abuilder.withName("<sortedDataDir>")
-		    .withMinimum(1).withMaximum(1).create()).withDescription("Output directory (defaults to /user/$USERNAME/sqoopOut/)")
+		    .withMinimum(1).withMaximum(1).create()).withDescription("sorted data output folder")
 		    .withShortName("o").create();
 	    Option iter = obuilder.withLongName("iterations").withRequired(false).withArgument(abuilder.withName("<iterations")
 	    	.withMinimum(1).withMaximum(1).create()).withDescription("Number of testing iterations to perform")
@@ -67,9 +67,13 @@ public class Benchmark extends Configured implements Tool
 	{
 		String[] args = { "randomdata" };
 		Configuration conf = new Configuration();
-		// Compress Map output with Snappy
-		conf.set("mapred.compress.map.output","true");
-		conf.set("mapred.map.output.compression.codec","org.apache.hadoop.io.compress.SnappyCodec");
+		// 2/2
+		conf.set("mapred.compress.map.output","false");
+		conf.set("mapred.map.child.java.opts","-Xmx1800m");
+		conf.set("mapreduce.map.java.opts","-Xmx1800m");
+		conf.set("mapreduce.reduce.java.opts", "-Xmx1800m");
+		conf.set("mapreduce.map.memory.mb", "2048");
+		conf.set("mapreduce.reduce.memory.mb", "2048");
 		long[] before = new long[iterations];
 		long[] middle = new long[iterations];
 		long[] after = new long[iterations];
@@ -78,17 +82,23 @@ public class Benchmark extends Configured implements Tool
 			HadoopUtil.delete(conf, new Path(arguments[1]));
 			before[i] = runSort(arguments, conf);
 		}
-		// HDFS block size = 128MB
-		conf.set("mapred.compress.map.output", "false");
-		conf.set("dfs.blocksize", "134217728");
+		// 2/4
+		conf.set("mapred.compress.map.output","false");
+		conf.set("mapred.map.child.java.opts","-Xmx1800m");
+		conf.set("mapreduce.map.java.opts","-Xmx1800m");
+		conf.set("mapreduce.reduce.java.opts", "-Xmx3600m");
+		conf.set("mapreduce.map.memory.mb", "2048");
+		conf.set("mapreduce.reduce.memory.mb", "4096");
 		generateRandom(args);
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
 			middle[i] = runSort(arguments, conf);
 		}
-		// HDFS block size = 64MB
-		conf.set("dfs.blocksize", "67108864");
+		// etc.
+		conf.set("dfs.blocksize", "128m");
+		conf.set("mapreduce.task.io.sort.mb", "600");
+		conf.set("mapreduce.task.io.sort.factor", "40");
 		generateRandom(args);
 		for (int i = 0; i < iterations; i++)
 		{

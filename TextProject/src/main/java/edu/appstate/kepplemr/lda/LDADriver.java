@@ -192,9 +192,9 @@ public class LDADriver extends Configured implements Tool
 	    arguments[3] = output + "cvbOut/";
 	    // Works only with fully-qualified argument names.
 	    arguments[4] = "--maxIter";
-	    arguments[5] = "50";
+	    arguments[5] = "30";
 	    arguments[6] = "--num_topics";
-	    arguments[7] = "100";
+	    arguments[7] = "20";
 	    arguments[8] = "-nt";
 	    // 3274483 + 2721162 = 5995645
 	    arguments[9] = "5995645";

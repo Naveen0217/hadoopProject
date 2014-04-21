@@ -1,1 +1,1 @@
-oozie job -config job.properties –run
+oozie job -config hdfs://mothership:8020/user/hadoop/oozie/job.properties –run
