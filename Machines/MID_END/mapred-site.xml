@@ -6,7 +6,7 @@
     <value>yarn</value>
   </property>
   <property>
-    <name>mapred.task.timeout</name>
+    <name>mapreduce.task.timeout</name>
     <value>1800000</value>
   </property>
   <property>
@@ -70,10 +70,6 @@
     <value>7</value>
   </property>
   <property>
-    <name>mapred.map.child.java.opts</name>
-    <value>-Xmx900m</value>
-  </property>
-  <property>
     <name>mapreduce.reduce.input.buffer.percent</name>
     <value>0.2</value>
   </property>
@@ -84,5 +80,9 @@
   <property>
     <name>mapreduce.reduce.java.opts</name>
     <value>-Xmx1800m</value>
+  </property>
+  <property>
+    <name>mapreduce.job.userlog.retain.hours</name>
+    <value>2</value>
   </property>
 </configuration>

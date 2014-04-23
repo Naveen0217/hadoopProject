@@ -65,12 +65,11 @@ public class Benchmark extends Configured implements Tool
 	
 	public void runTests(String[] arguments, int iterations) throws IOException
 	{
+		@SuppressWarnings("unused")
 		String[] args = { "randomdata" };
 		Configuration conf = new Configuration();
 		// 100/10
 		conf.set("mapred.compress.map.output","false");
-		conf.set("mapreduce.task.io.sort.mb", "100");
-		conf.set("mapreduce.task.io.sort.factor", "10");
 		long[] before = new long[iterations];
 		long[] middle = new long[iterations];
 		long[] after = new long[iterations];
@@ -81,8 +80,8 @@ public class Benchmark extends Configured implements Tool
 		}
 		// 600/40
 		conf.set("mapred.compress.map.output","false");
-		conf.set("mapreduce.task.io.sort.mb", "600");
-		conf.set("mapreduce.task.io.sort.factor", "40");
+		conf.set("mapreduce.task.io.sort.mb", "450");
+		conf.set("mapreduce.task.io.sort.factor", "45");
 		//generateRandom(args);
 		for (int i = 0; i < iterations; i++)
 		{
@@ -91,7 +90,7 @@ public class Benchmark extends Configured implements Tool
 		}
 		// 600/20
 		conf.set("mapred.compress.map.output","false");
-		conf.set("mapreduce.task.io.sort.mb", "600");
+		conf.set("mapreduce.task.io.sort.mb", "450");
 		conf.set("mapreduce.task.io.sort.factor", "20");
 		//generateRandom(args);
 		for (int i = 0; i < iterations; i++)

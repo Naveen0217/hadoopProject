@@ -37,7 +37,7 @@
   </property>
   <property>
     <name>dfs.client.file-block-storage-locations.timeout</name>
-    <value>3000</value>
+    <value>5000</value>
     <final>true</final>
   </property>
   <property>
@@ -74,5 +74,9 @@
     <name>dfs.datanode.du.reserved</name>
     <value>10737418240</value>
     <final>true</final>
+  </property>
+  <property>
+    <name>dfs.blocksize</name>
+    <value>134217728</value>
   </property>
 </configuration>
