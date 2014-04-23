@@ -67,13 +67,10 @@ public class Benchmark extends Configured implements Tool
 	{
 		String[] args = { "randomdata" };
 		Configuration conf = new Configuration();
-		// 2/2
+		// 100/10
 		conf.set("mapred.compress.map.output","false");
-		conf.set("mapred.map.child.java.opts","-Xmx1800m");
-		conf.set("mapreduce.map.java.opts","-Xmx1800m");
-		conf.set("mapreduce.reduce.java.opts", "-Xmx1800m");
-		conf.set("mapreduce.map.memory.mb", "2048");
-		conf.set("mapreduce.reduce.memory.mb", "2048");
+		conf.set("mapreduce.task.io.sort.mb", "100");
+		conf.set("mapreduce.task.io.sort.factor", "10");
 		long[] before = new long[iterations];
 		long[] middle = new long[iterations];
 		long[] after = new long[iterations];
@@ -82,24 +79,21 @@ public class Benchmark extends Configured implements Tool
 			HadoopUtil.delete(conf, new Path(arguments[1]));
 			before[i] = runSort(arguments, conf);
 		}
-		// 2/4
+		// 600/40
 		conf.set("mapred.compress.map.output","false");
-		conf.set("mapred.map.child.java.opts","-Xmx1800m");
-		conf.set("mapreduce.map.java.opts","-Xmx1800m");
-		conf.set("mapreduce.reduce.java.opts", "-Xmx3600m");
-		conf.set("mapreduce.map.memory.mb", "2048");
-		conf.set("mapreduce.reduce.memory.mb", "4096");
-		generateRandom(args);
+		conf.set("mapreduce.task.io.sort.mb", "600");
+		conf.set("mapreduce.task.io.sort.factor", "40");
+		//generateRandom(args);
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
 			middle[i] = runSort(arguments, conf);
 		}
-		// etc.
-		conf.set("dfs.blocksize", "128m");
+		// 600/20
+		conf.set("mapred.compress.map.output","false");
 		conf.set("mapreduce.task.io.sort.mb", "600");
-		conf.set("mapreduce.task.io.sort.factor", "40");
-		generateRandom(args);
+		conf.set("mapreduce.task.io.sort.factor", "20");
+		//generateRandom(args);
 		for (int i = 0; i < iterations; i++)
 		{
 			HadoopUtil.delete(conf, new Path(arguments[1]));
