@@ -1,65 +1,71 @@
 <workflow-app name="ooziebenchmark" xmlns="uri:oozie:workflow:0.4">
-	<start to="pig1"/>
-	<action name="pig1">
-		<pig>
-			<job-tracker>${jobTracker}</job-tracker>
-			<name-node>${nameNode}</name-node>
-			<prepare>
-				<delete path="${output}"/>
-			</prepare>
-			<script>AppCount.pig</script>
-			<argument>-param</argument>
-			<argument>input=${input}</argument>
-			<argument>-param</argument>
-			<argument>output=${output}</argument>
-		</pig>
-		<ok to="hivePrep"/>
-		<error to="kill"/>
-	</action>
+	<start to="hivePrep"/>
+	<!-- HIVE SCRIPTS -->
+	<!-- Prepare 'corpora' table -->
 	<action name="hivePrep">
 		<hive xmlns="uri:oozie:hive-action:0.2">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
-			<configuration>
-				<property>
-					<name>oozie.hive.defaults</name>
-					<value>hive-site.xml</value>
-				</property>
-			</configuration>
 			<script>HiveQL/TableLoad.hql</script>
+			<param>table=${input}</param>
 		</hive>
-		<ok to="hive1"/>
+		<ok to="hiveCount"/>
 		<error to="kill"/>
 	</action>
-	<action name="hive1">
+	<!-- Hive -> WordCount -->
+	<action name="hiveCount">
 		<hive xmlns="uri:oozie:hive-action:0.2">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
-			<configuration>
-				<property>
-					<name>oozie.hive.defaults</name>
-					<value>hive-site.xml</value>
-				</property>
-			</configuration>
+			<script>HiveQL/AppCount.hql</script>
+		</hive>
+		<ok to="hiveCooc"/>
+		<error to="kill"/>
+	</action>
+	<!-- Hive -> Cooccurrence -->
+	<action name="hiveCooc">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
+			<script>HiveQL/AppCountCooc.hql</script>
+		</hive>
+		<ok to="hiveCountLeft"/>
+		<error to="kill"/>
+	</action>
+	<!-- Hive -> CountLeft -->
+	<action name="hiveCountLeft">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
+			<script>HiveQL/AppCountLeft.hql</script>
+		</hive>
+		<ok to="hiveCountRight"/>
+		<error to="kill"/>
+	</action>
+	<!-- Hive -> CountRight -->
+	<action name="hiveCountRight">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL/AppCountRight.hql</script>
 		</hive>
-		<ok to="hive2"/>
+		<ok to="hiveUDFLeft"/>
 		<error to="kill"/>
 	</action>
-	<action name="hive2">
+	<!-- HIVE_UDFs -->
+	<!-- HiveUDF -> CountLeft -->
+	<action name="hiveUDFLeft">
 		<hive xmlns="uri:oozie:hive-action:0.2">
 			<job-tracker>${jobTracker}</job-tracker>
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
-			<configuration>
-				<property>
-					<name>oozie.hive.defaults</name>
-					<value>hive-site.xml</value>
-				</property>
-			</configuration>
-			<script>HiveQL/AppCountLeft.hql</script>
+			<script>HiveQL_UDF/AppCountLeft.hql</script>
+			<param>output=${output}</param>
 		</hive>
 		<ok to="end"/>
 		<error to="kill"/>

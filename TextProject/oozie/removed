@@ -1,0 +1,54 @@
+	<action name="pig1">
+		<pig>
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${output}"/>
+			</prepare>
+			<script>AppCount.pig</script>
+			<argument>-param</argument>
+			<argument>input=${input}</argument>
+			<argument>-param</argument>
+			<argument>output=${output}</argument>
+		</pig>
+		<ok to="h"/>
+		<error to="kill"/>
+	</action>
+	
+	
+	
+		<action name="hive1">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
+			<configuration>
+				<property>
+					<name>oozie.hive.defaults</name>
+					<value>hive-site.xml</value>
+				</property>
+			</configuration>
+			<script>HiveQL/AppCountRight.hql</script>
+		</hive>
+		<ok to="hive2"/>
+		<error to="kill"/>
+	</action>
+	<action name="hive2">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
+			<configuration>
+				<property>
+					<name>oozie.hive.defaults</name>
+					<value>hive-site.xml</value>
+				</property>
+			</configuration>
+			<script>HiveQL/AppCountLeft.hql</script>
+		</hive>
+		<ok to="end"/>
+		<error to="kill"/>
+	</action>
+	<kill name="kill">
+		<message>Action failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
