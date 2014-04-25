@@ -34,7 +34,10 @@
   <value>/user/hive/warehouse</value>
 </property>
 
-
+<property>
+  <name>hive.metastore.client.socket.timeout</name>
+  <value>100</value>
+</property>
 
 
 </configuration>

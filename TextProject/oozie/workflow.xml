@@ -20,6 +20,7 @@
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL/AppCount.hql</script>
+			<param>output=${output}</param>
 		</hive>
 		<ok to="hiveCooc"/>
 		<error to="kill"/>
@@ -31,6 +32,7 @@
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL/AppCountCooc.hql</script>
+			<param>output=${output}</param>
 		</hive>
 		<ok to="hiveCountLeft"/>
 		<error to="kill"/>
@@ -42,6 +44,7 @@
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL/AppCountLeft.hql</script>
+			<param>output=${output}</param>
 		</hive>
 		<ok to="hiveCountRight"/>
 		<error to="kill"/>
@@ -53,6 +56,7 @@
 			<name-node>${nameNode}</name-node>
 			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL/AppCountRight.hql</script>
+			<param>output=${output}</param>
 		</hive>
 		<ok to="hiveUDFLeft"/>
 		<error to="kill"/>
@@ -66,6 +70,20 @@
 			<job-xml>hive-site.xml</job-xml>
 			<script>HiveQL_UDF/AppCountLeft.hql</script>
 			<param>output=${output}</param>
+			<param>lib=${lib}</param>
+		</hive>
+		<ok to="hiveUDFRight"/>
+		<error to="kill"/>
+	</action>
+	<!-- HiveUDF -> CountRight -->
+	<action name="hiveUDFRight">
+		<hive xmlns="uri:oozie:hive-action:0.2">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<job-xml>hive-site.xml</job-xml>
+			<script>HiveQL_UDF/AppCountRight.hql</script>
+			<param>output=${output}</param>
+			<param>lib=${lib}</param>
 		</hive>
 		<ok to="end"/>
 		<error to="kill"/>

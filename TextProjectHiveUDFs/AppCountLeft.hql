@@ -11,4 +11,3 @@ FROM
     WHERE INSTR(LOWER(sentence), "appalachian") > 0
   ) x
 ) w GROUP BY word ORDER BY count DESC, word ASC;
-SELECT * FROM wc;

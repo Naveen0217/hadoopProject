@@ -1,20 +1,20 @@
 ----------------------------------------------------------------
-2014-04-24 03:42:50.039 GMT:
- Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance a816c00e-0145-91d4-2035-00000625add0
+2014-04-24 03:55:58.714 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance a816c00e-0145-91e0-29d8-000006223ae8
 on database directory /home/michael/workspace/TextProjectHiveUDFs/TempStatsStore  
 
 Database Class Loader started - derby.database.classpath=''
 
-2014-04-24 03:42:50.345 GMT:
-Shutting down instance a816c00e-0145-91d4-2035-00000625add0
+2014-04-24 03:55:59.025 GMT:
+Shutting down instance a816c00e-0145-91e0-29d8-000006223ae8
 ----------------------------------------------------------------
 ----------------------------------------------------------------
-2014-04-24 03:43:05.960 GMT:
- Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance 08264012-0145-91d4-2035-00000625add0
+2014-04-24 03:56:13.410 GMT:
+ Booting Derby version The Apache Software Foundation - Apache Derby - 10.4.2.0 - (689064): instance 08264012-0145-91e0-29d8-000006223ae8
 on database directory /home/michael/workspace/TextProjectHiveUDFs/TempStatsStore  
 
 Database Class Loader started - derby.database.classpath=''
 
-2014-04-24 03:43:06.673 GMT:
-Shutting down instance 08264012-0145-91d4-2035-00000625add0
+2014-04-24 03:56:14.091 GMT:
+Shutting down instance 08264012-0145-91e0-29d8-000006223ae8
 ----------------------------------------------------------------

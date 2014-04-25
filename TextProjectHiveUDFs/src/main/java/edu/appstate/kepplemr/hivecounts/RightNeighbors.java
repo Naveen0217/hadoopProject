@@ -9,7 +9,7 @@ public class RightNeighbors extends UDF
 	public Text evaluate(Text line, Text word)
 	{
 		String sentence = line.toString().toLowerCase();
-		String token = word.toString();
+		String token = word.toString().toLowerCase();
 		if (sentence.contains(token))
 		{
 			String[] words = sentence.split(" ");

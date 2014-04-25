@@ -158,7 +158,7 @@ public class SQL2Seq
 					File myi = new File(fileEntry.getPath() + "/" + table + ".MYI");
 					if (frm.exists() && !frm.isDirectory() && myd.exists() && 
 						!myd.isDirectory() && myi.exists() && !myi.isDirectory() &&
-						fileEntry.getName().contains("_20"))
+						(fileEntry.getName().contains("_20") || fileEntry.getName().contains("_19")))
 					{
 						System.out.println("Found matching database: " + fileEntry.getName());
 						String dbName = fileEntry.getName();
