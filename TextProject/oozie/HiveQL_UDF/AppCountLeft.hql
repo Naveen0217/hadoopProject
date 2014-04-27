@@ -1,4 +1,4 @@
-ADD JAR ${lib}/CountsUDAF-0.0.1.jar;
+ADD JAR ${lib}/HiveCounts-1.0.jar;
 CREATE TEMPORARY FUNCTION left AS 'edu.appstate.kepplemr.hivecounts.LeftNeighbors';
 
 DROP TABLE IF EXISTS wc;

@@ -17,7 +17,7 @@ public class LeftNeighbors extends EvalFunc<String>
 		if (tuple == null || tuple.size() == 0)
 			return null;
 		String line = ((String)tuple.get(0)).toLowerCase();
-		String word = (String) tuple.get(1);
+		String word = ((String) tuple.get(1)).toLowerCase();
 		// STDOUT, STDERR -> HDFS logDir
 		if (line.contains(word))
 		{
