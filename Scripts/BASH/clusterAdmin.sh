@@ -225,7 +225,19 @@ undo_solo()
     reboot
 }
 
-while getopts "h:si:e:rn:adicoul" opt; do
+# restart ganglia daemons throughout cluster
+ganglia()
+{
+    stty -echo
+    read -p "Password: " passw; echo
+    stty echo
+    for node in ${NODES[@]}
+    do
+        sshpass -p $passw ssh root@$node -t "service gmond restart"
+    done
+}
+
+while getopts "h:si:e:rn:adicoulg" opt; do
     case $opt in
 	e) execute_nodes $OPTARG
 	   ;;
@@ -250,6 +262,8 @@ while getopts "h:si:e:rn:adicoul" opt; do
         u) undo_solo
            ;;
         l) large_heap_sync
+           ;;
+        g) ganglia
            ;;
     esac
 done
