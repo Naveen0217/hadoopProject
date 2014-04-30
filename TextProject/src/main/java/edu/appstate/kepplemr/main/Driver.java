@@ -4,6 +4,7 @@ import org.apache.log4j.LogManager;
 import edu.appstate.kepplemr.counts.Counts;
 import edu.appstate.kepplemr.dataimport.AutoSqoop;
 import edu.appstate.kepplemr.dataimport.SQL2Seq;
+import edu.appstate.kepplemr.kmeans.KDriver;
 import edu.appstate.kepplemr.lda.LDADriver;
 import edu.appstate.kepplemr.util.Benchmark;
 import edu.appstate.kepplemr.util.ConfigPrinter;
@@ -56,6 +57,9 @@ public class Driver
 					break;
 				case "benchmark":
 					Benchmark.main(arguments);
+					break;
+				case "kmeans":
+					KDriver.main(arguments);
 					break;
 			}
 		}
