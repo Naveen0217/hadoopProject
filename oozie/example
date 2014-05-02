@@ -1,0 +1,1 @@
+oozie job -config ./oozie/job.properties -run

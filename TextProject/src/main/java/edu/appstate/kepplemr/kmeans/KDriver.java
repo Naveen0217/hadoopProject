@@ -192,6 +192,8 @@ public class KDriver extends Configured implements Tool
 		}
 		if (generateKMeans)
 		{
+			input = output + "sparseVectors/tfidf-vectors";
+			output = output + "kmeans";
 			Path clusters = new Path("clusters");
 			double convergenceDelta = 0;
 			String measureClass = "org.apache.mahout.common.distance.CosineDistanceMeasure";
